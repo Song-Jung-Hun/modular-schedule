@@ -1,0 +1,9 @@
+# 모든 파일 기본 제외
+*
+
+# 공정표 관련 파일만 포함
+!.gitignore
+!모듈러주택_공정표.html
+!extract_refs.py
+!refs/
+!refs/**
