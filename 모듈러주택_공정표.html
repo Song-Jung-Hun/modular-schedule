@@ -713,15 +713,6 @@
               </tfoot>
             </table>
             <div style="display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; align-items:stretch;">
-              <div class="input-group" style="border:2px solid #4472C4; border-radius:8px; padding:10px; background:#F0F4FF; flex:1; min-width:160px;">
-                <label style="color:#1F4E79; font-weight:800;">세대 전용면적 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_세대면적" style="font-size:20px; color:#1F4E79;">—</span>
-                  <span class="unit">㎡</span>
-                </div>
-                <div id="r_면적판정" style="font-size:11px; font-weight:700; margin-top:4px; color:#888;">—</div>
-                <span class="note-text">= 타입별 (폭×길이×세대당수) 합계</span>
-              </div>
               <div class="input-group" style="border:2px solid #BFC9D4; border-radius:8px; padding:10px; background:#FAFAFA; flex:1; min-width:160px;">
                 <label style="color:#555; font-weight:800;">총 모듈 수 (자동)</label>
                 <div class="input-row">
@@ -1684,20 +1675,6 @@ function calc() {
   $('r_총세대').textContent         = v.총세대;
   $('r_총모듈').textContent         = v.총모듈;
 
-  // 모듈 타입별 → 세대 면적
-  const 세대면적 = moduleTypes.reduce(function(s,t){ return s + t.w*t.l*(t.n||0); }, 0);
-  $('r_세대면적').textContent = 세대면적.toFixed(1);
-  const 판정el = $('r_면적판정');
-  if (세대면적 >= 85) {
-    판정el.textContent = '✅ 85㎡ 이상 (국민주택 규모 초과)';
-    판정el.style.color = '#2E7D32';
-  } else if (세대면적 >= 60) {
-    판정el.textContent = '🟡 60㎡ 이상 85㎡ 미만';
-    판정el.style.color = '#B8860B';
-  } else {
-    판정el.textContent = '🔵 60㎡ 미만 (소형)';
-    판정el.style.color = '#1F4E79';
-  }
   $('r_일일설치속도').textContent   = v.일일설치속도;
   $('r_최하층설치일').textContent   = v.층당설치일_최하층;
   $('r_기준층설치일').textContent   = v.층당설치일_기준층;
