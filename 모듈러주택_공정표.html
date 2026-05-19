@@ -1443,7 +1443,7 @@ function buildTasks(v) {
     add(3.5, `지하층 골조 (지하 ${v.지하층수}층)`,
         지하골조_real, 지하골조_nw, task(3).end + 1, 'critical',
         `LH 지침 2.5.2: 지하 ${v.지하층수}층 실작업 ${지하골조_real}일 (1층=44일·2층=71일·추가층+27일) / 별표2·주말·공휴 반영`,
-        ['lh_p10']);
+        ['lh_p10', 'lh_p18', 'lh_p19']);
     afterFoundEnd = s[s.length - 1].end;
   }
 
@@ -1531,8 +1531,8 @@ function buildTasks(v) {
 
   // 지붕 트러스 (모듈+강봉 완료 AND 옥탑골조 완료 중 늦은 것)
   add(taskNo++, '지붕 트러스 조립', 3, 0, max(lastAssemblyEnd, task(5).end) + 1, 'critical',
-    'OTKCRK p.163 표5-11 공기산정기준(안): 실작업 3일',
-    ['otkcrk_p135', 'otkcrk_p163']);
+    'OTKCRK p.163 표5-11 공기산정기준(안): 실작업 3일 (※ p.135 표4-39 천안두정 실적은 2일)',
+    ['otkcrk_p163']);
 
   // 지붕 패널·방수시트: 층당 모듈 수에 비례 (지붕 면적 비례)
   // 기준: OTKCRK p.135 표4-39 — 층당 10모듈(2세대×5모듈) 기준 패널3일·방수2일
@@ -1553,7 +1553,7 @@ function buildTasks(v) {
     'OTKCRK p.8: 30일 (방바닥미장 공장시공 가정)', ['otkcrk_p8']);
 
   add(taskNo++, '건축마감 (공용부위)', 30, 0, s[s.length - 1].end + 1, 'critical',
-    'OTKCRK p.8: 마감 완료 후 30일', ['otkcrk_p8', 'otkcrk_p156']);
+    'OTKCRK p.8: 마감 완료 후 30일', ['otkcrk_p8']);
 
   const t_마감 = s[s.length - 1];
   // 부대공사: 건축준공 후 순차 진행 (OTKCRK p.156 + LH지침 p.7)
