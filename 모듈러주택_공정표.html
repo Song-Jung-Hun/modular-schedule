@@ -1000,8 +1000,12 @@
               <div class="s-label">코어골조 기간</div>
               <div><span class="s-value" id="s_코어">120</span><span class="s-unit">일</span></div>
             </div>
+            <div class="summary-item">
+              <div class="s-label">총 실작업일</div>
+              <div><span class="s-value" id="s_총실작업">--</span><span class="s-unit">일</span></div>
+            </div>
             <div class="summary-item critical">
-              <div class="s-label">총 공사기간</div>
+              <div class="s-label">총 공사기간 (달력일)</div>
               <div><span class="s-value" id="s_총기간">--</span><span class="s-unit">일</span></div>
             </div>
           </div>
@@ -1717,8 +1721,10 @@ function calc() {
   $('s_일일속도').textContent = `크레인 ${v.크레인대수}대 × 최하층${v.최하층속도}/기준층${v.기준층속도}유닛 = ${v.크레인대수*v.최하층속도}/${v.일일설치속도}유닛/일`;
   $('s_조립기간').textContent = assemblyTask ? assemblyTask.total : v.총조립기간;
   $('s_코어').textContent    = coreTask ? coreTask.total : 0;
+  const totalReal = tasks.reduce((sum, t) => sum + t.real, 0);
+  $('s_총실작업').textContent = totalReal;
   $('s_총기간').textContent  = totalDays;
-  $('total-badge').textContent = `총 공사기간 ${totalDays}일`;
+  $('total-badge').textContent = `총 공사기간 ${totalDays}일 (실작업 ${totalReal}일)`;
 
   const startDate = getStartDate();
   renderSchedule(tasks, totalDays, startDate);
@@ -1773,13 +1779,17 @@ function renderSchedule(tasks, totalDays, startDate) {
   });
 
   // 합계행
+  const totalReal = tasks.reduce((sum, t) => sum + t.real, 0);
+  const totalNW   = tasks.reduce((sum, t) => sum + t.nw,   0);
   const tr = document.createElement('tr');
   tr.className = 'total-row';
   tr.innerHTML = `
-    <td colspan="4" style="text-align:center">총 공사기간 (크리티컬 패스)</td>
+    <td colspan="2" style="text-align:center">합계 (크리티컬 패스 기준)</td>
+    <td class="num-col">${totalReal}일</td>
+    <td class="num-col">${totalNW}일</td>
     <td class="num-col">${totalDays}일</td>
     <td colspan="3" style="text-align:center; font-size:11px; opacity:0.8">
-      전체 공종 중 최대 완료일(D+N) + 1 = 총 달력일수
+      달력일 = 실작업일 + 비작업일
     </td>
   `;
   tbody.appendChild(tr);
