@@ -853,7 +853,7 @@
               <div id="r_크레인적합" style="padding:9px 14px; border-radius:7px; font-size:12px; font-weight:700; background:#F5F5F5; color:#888; margin-top:4px;">
                 — 모듈 중량을 입력하면 자동으로 검토됩니다
               </div>
-              <span class="note-text">들어야 할 무게(모듈 × 1.25)가 크레인 최대 양중 무게를 넘으면 위험 · 이내라도 작업 반경이 길어지면 실제로 들 수 있는 무게가 줄어드므로 하중표 확인 필수</span>
+              <span class="note-text">모듈 중량 × 1.25 기준 / 작업 반경에 따라 실제 양중 가능 무게가 달라지므로 현장 하중표 별도 확인</span>
             </div>
           </div>
 
@@ -1687,10 +1687,10 @@ function calc() {
     let bg, color, icon, msg;
     if (양중중량 > v.크레인종류) {
       bg = '#FFEBEE'; color = '#B71C1C'; icon = '⛔';
-      msg = `양중 불가 — 들어야 할 무게 ${양중중량}t (모듈 ${v.모듈중량}t × 1.25)가 이 크레인이 들 수 있는 최대 무게 ${v.크레인종류}t를 초과`;
+      msg = '양중 불가';
     } else {
       bg = '#E8F5E9'; color = '#2E7D32'; icon = '✅';
-      msg = `양중 가능 — 들어야 할 무게 ${양중중량}t (모듈 ${v.모듈중량}t × 1.25) · ${v.크레인종류}t 크레인 기준 이내 · 단, 작업 반경이 길어질수록 실제로 들 수 있는 무게가 줄어드므로 하중표 확인 필요`;
+      msg = '양중 가능';
     }
     el.textContent = `${icon} ${msg}`;
     el.style.background = bg;
