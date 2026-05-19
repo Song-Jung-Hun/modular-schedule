@@ -1493,6 +1493,12 @@ function buildTasks(v) {
 
   const lastAssemblyEnd = 달_총조립기간 > 0 ? cycleStart + 달_총조립기간 - 1 : cycleStart;
 
+  // 옥탑 골조 크리티컬 패스 동적 판정
+  // 지붕 트러스 착수 기준: max(lastAssemblyEnd, 옥탑골조.end) → 옥탑골조가 더 늦으면 CP
+  if (task(5).end >= lastAssemblyEnd) {
+    s.find(t => t.no === 5).type = 'critical';
+  }
+
   // 간트 바차트용 층별 세그먼트 배열 (달력 기간 기준)
   const _modBars  = [];
   const _boltBars = [];
