@@ -915,34 +915,34 @@
               <div class="input-row">
                 <select id="i_지역" class="region-select" onchange="onRegionChange()">
                   <optgroup label="수도권">
-                    <option value="144,132">서울</option>
-                    <option value="144,130">인천</option>
-                    <option value="144,137">수원 (경기남부)</option>
-                    <option value="163,149">파주 (경기북부)</option>
+                    <option value="170,158">서울</option>
+                    <option value="170,156">인천</option>
+                    <option value="170,163">수원 (경기남부)</option>
+                    <option value="189,175">파주 (경기북부)</option>
                   </optgroup>
                   <optgroup label="강원">
-                    <option value="159,150">춘천</option>
-                    <option value="162,151">원주</option>
-                    <option value="137,127">강릉</option>
+                    <option value="185,176">춘천</option>
+                    <option value="188,177">원주</option>
+                    <option value="163,153">강릉</option>
                   </optgroup>
                   <optgroup label="충청">
-                    <option value="149,136">대전</option>
-                    <option value="151,141" selected>천안 (충남)</option>
-                    <option value="158,147">청주 (충북)</option>
-                    <option value="143,132">서산 (충남)</option>
+                    <option value="175,162">대전</option>
+                    <option value="177,167" selected>천안 (충남)</option>
+                    <option value="184,173">청주 (충북)</option>
+                    <option value="169,158">서산 (충남)</option>
                   </optgroup>
                   <optgroup label="경상">
-                    <option value="139,135">대구</option>
-                    <option value="148,124">부산</option>
-                    <option value="141,129">창원</option>
-                    <option value="133,127">울산</option>
+                    <option value="165,161">대구</option>
+                    <option value="174,150">부산</option>
+                    <option value="167,155">창원</option>
+                    <option value="159,153">울산</option>
                   </optgroup>
                   <optgroup label="전라">
-                    <option value="153,148">광주</option>
-                    <option value="150,148">전주</option>
+                    <option value="179,174">광주</option>
+                    <option value="176,174">전주</option>
                   </optgroup>
                   <optgroup label="제주">
-                    <option value="152,134">제주</option>
+                    <option value="178,160">제주</option>
                   </optgroup>
                 </select>
               </div>
@@ -951,7 +951,7 @@
             <div class="input-group">
               <label>기초공사 비작업일/년 [별표1]</label>
               <div class="input-row">
-                <input type="number" id="i_별표1" value="151" min="0" max="364" oninput="calc()">
+                <input type="number" id="i_별표1" value="177" min="0" max="364" oninput="calc()">
                 <span class="unit">일/년</span>
               </div>
               <span class="note-text" id="note_별표1">LH 지침 별표1, 천안(충남) 기준</span>
@@ -960,7 +960,7 @@
             <div class="input-group">
               <label>골조공사 비작업일/년 [별표2]</label>
               <div class="input-row">
-                <input type="number" id="i_별표2" value="141" min="0" max="364" oninput="calc()">
+                <input type="number" id="i_별표2" value="167" min="0" max="364" oninput="calc()">
                 <span class="unit">일/년</span>
               </div>
               <span class="note-text" id="note_별표2">LH 지침 별표2, 천안(충남) 기준</span>
@@ -983,7 +983,7 @@
             </div>
           </div>
           <div style="margin-top:12px; background:#EEF4FF; border-radius:6px; padding:10px 12px; font-size:11px; color:#444;">
-            <strong>비작업일 계산:</strong> LH 지침 별표1/2 = 연간 총 비작업일 (주말·공휴·기상 통합) → 달력기간 = CEILING(실작업일 × 365 ÷ (365 − 별표)) | 예: 천안 별표2=141 → 실작업 1일 ≈ 1.63 달력일
+            <strong>비작업일 계산:</strong> LH 지침 별표1/2 = 연간 총 비작업일 (일요일·토요일·공휴일·기상 통합, 주5일 기준) → 달력기간 = CEILING(실작업일 × 365 ÷ (365 − 별표)) | 예: 천안 별표2=167 → 실작업 1일 ≈ 1.84 달력일
           </div>
         </div>
       </div>
