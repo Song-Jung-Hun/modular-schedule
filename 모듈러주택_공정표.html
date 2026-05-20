@@ -657,7 +657,7 @@
                 <input type="number" id="i_세대층" value="15" min="1" max="50" oninput="calc()">
                 <span class="unit">층</span>
               </div>
-              <span class="note-text">강봉 연결 방식 — 전용 구조층 없음</span>
+              <span class="note-text">강봉+수평 볼트 접합 방식 — 전용 구조층 없음</span>
             </div>
             <div class="input-group">
               <label>총 층수 (자동)</label>
@@ -796,7 +796,7 @@
 
       <!-- B. 모듈 현장 조립 -->
       <div class="card">
-        <div class="card-header red">🏗️ B. 모듈 현장 조립 (크레인 + 강봉 연결)</div>
+        <div class="card-header red">🏗️ B. 모듈 현장 조립 (크레인 + 접합 작업)</div>
         <div class="card-body">
           <div class="input-grid">
             <div class="input-group">
@@ -857,27 +857,37 @@
             </div>
           </div>
 
-          <!-- 강봉 연결 -->
+          <!-- 접합 작업 -->
           <div style="margin-top:16px; padding-top:14px; border-top:1px solid #EEE;">
             <div style="font-weight:700; color:#385723; font-size:12px; margin-bottom:10px;">
-              🔩 강봉 연결 (층별 순차 — 설치 완료 후 바로 연결, 다음 층으로 진행)
+              🔩 접합 작업 (층별 순차 — 설치 완료 후 바로 연결, 다음 층으로 진행)
             </div>
             <div class="input-grid">
               <div class="input-group">
-                <label>모듈당 강봉 연결 기간</label>
+                <label>① 수직 강봉 연결 (층간)</label>
                 <div class="input-row">
-                  <input type="number" id="i_강봉기간" value="0.1" min="0" step="0.1" oninput="calc()">
+                  <input type="number" id="i_강봉기간" value="0.07" min="0" step="0.01" oninput="calc()">
                   <span class="unit">일/모듈</span>
                 </div>
-                <span class="note-text">표준품셈 기준 없음 — 현장 실적에 따라 직접 입력</span>
+                <span class="note-text">층간 강봉 체결 — 공식 기준 없음, OTKCRK 표5-11 볼트총합(0.1일/모듈) 기반 추정</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163','pssem_p641'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
-                <label>층당 강봉 연결 기간 (자동)</label>
+                <label>② 수평 접합 (동일층 인접 모듈)</label>
+                <div class="input-row">
+                  <input type="number" id="i_수평접합기간" value="0.03" min="0" step="0.01" oninput="calc()">
+                  <span class="unit">일/모듈</span>
+                </div>
+                <span class="note-text">같은 층 모듈 간 볼트 체결 — 공식 기준 없음, OTKCRK 표5-10·5-11 기반 추정</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p162','otkcrk_p163','pssem_p641'])">📄 근거 보기</button>
+              </div>
+              <div class="input-group">
+                <label>층당 접합 합계 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_층당강봉일">1</span>
                   <span class="unit">일/층</span>
                 </div>
-                <span class="note-text">= CEILING(모듈당 기간 × 층당 모듈 수)</span>
+                <span class="note-text">= CEILING((수직+수평) × 층당 모듈 수)</span>
               </div>
               <div class="input-group">
                 <label>층당 모듈 설치일 (자동)</label>
@@ -892,7 +902,7 @@
                 <span class="note-text">= CEILING(층당모듈 ÷ 크레인대수×속도)</span>
               </div>
               <div class="input-group">
-                <label>총 조립+강봉 기간, 실작업일 (자동)</label>
+                <label>총 조립+접합 기간, 실작업일 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_총조립기간">45</span>
                   <span class="unit">일 (비작업일 미포함)</span>
@@ -1001,7 +1011,7 @@
               <div style="font-size:11px; line-height:1.4;"><span id="s_일일속도">크레인 1대 × 6유닛 = 6유닛/일</span></div>
             </div>
             <div class="summary-item orange">
-              <div class="s-label">조립+강봉 기간 (달력)</div>
+              <div class="s-label">조립+접합 기간 (달력)</div>
               <div><span class="s-value" id="s_조립기간">45</span><span class="s-unit">일</span></div>
             </div>
             <div class="summary-item">
@@ -1056,7 +1066,7 @@
         <div class="legend" style="margin-bottom:14px;">
           <div class="legend-item"><div class="legend-box" style="background:linear-gradient(90deg,#C00000,#E53935)"></div>크리티컬 패스</div>
           <div class="legend-item"><div class="legend-box" style="background:linear-gradient(90deg,#2962B0,#4472C4)"></div>일반 공종</div>
-          <div class="legend-item"><div class="legend-box" style="background:linear-gradient(90deg,#CC7700,#FF9900)"></div>강봉 연결</div>
+          <div class="legend-item"><div class="legend-box" style="background:linear-gradient(90deg,#CC7700,#FF9900)"></div>접합 작업 (수직 강봉+수평 볼트)</div>
           <div class="legend-item"><div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid #7030A0;display:inline-block;margin-right:4px;"></div>마일스톤</div>
         </div>
         <div class="gantt-wrapper">
@@ -1105,8 +1115,10 @@ const REFS = {
   otkcrk_p149: { label: 'OTKCRK p.149 — 공사 준비기간(계속)',    img: 'refs/otkcrk_p149.png' },
   otkcrk_p153: { label: 'OTKCRK p.153 — 코어골조 8일/층 근거',  img: 'refs/otkcrk_p153.png' },
   otkcrk_p156: { label: 'OTKCRK p.156 — 부대공사 기준',         img: 'refs/otkcrk_p156.png' },
-  otkcrk_p163: { label: 'OTKCRK p.163 — 표5-11 현장조립 기준(안)', img: 'refs/otkcrk_p163.png' },
+  otkcrk_p162: { label: 'OTKCRK p.162 — 표5-10 인필식 현장조립 소요기간 (세대 간 접합 10일/36모듈)', img: 'refs/otkcrk_p162.png' },
+  otkcrk_p163: { label: 'OTKCRK p.163 — 표5-11 적층식 현장조립 기준(안) (볼트체결 2일/20모듈)', img: 'refs/otkcrk_p163.png' },
   otkcrk_p212: { label: 'OTKCRK p.212 — 부록 3.3 상부공사기간 (옥탑 8일)', img: 'refs/otkcrk_p212.png' },
+  pssem_p641:  { label: '건설공사 표준품셈(2021) p.641 — 강구조 1-2-3 고장력 볼트 본조임 기준', img: 'refs/pssem_p641.png' },
   lh_p7:   { label: 'LH 지침 p.7 — 조경공사 25일 및 준비기간 30일', img: 'refs/lh_p7.png' },
   lh_p9:   { label: 'LH 지침 p.9 — 터파기 기간 (2.4.1)',        img: 'refs/lh_p9.png' },
   lh_p10:  { label: 'LH 지침 p.10 — 기초공사 (2.5.1) + 지하층 골조 기간 (2.5.2)', img: 'refs/lh_p10.png' },
@@ -1513,19 +1525,19 @@ function buildTasks(v) {
     const fStart = cycleStart + fOffset;
     _modBars.push({ start: fStart, total: 달_설치일, type: 'critical',
                     name: `${f+1}층 모듈 조립 (${달_설치일}일)` });
-    if (v.강봉기간 > 0) {
+    if (총접합기간 > 0) {
       _boltBars.push({ start: fStart + 달_설치일, total: Math.max(1, 달_강봉일), type: 'orange',
-                       name: `${f+1}층 강봉 연결 (${Math.max(1, 달_강봉일)}일)` });
+                       name: `${f+1}층 접합 작업 (${Math.max(1, 달_강봉일)}일, 수직${v.강봉기간}+수평${v.수평접합기간}일/모듈)` });
     }
     fOffset += 달_층소요일;
   }
 
   // 공기산정표: 1개 행으로 표현 (총조립기간 = real, 간트에서 2행으로 분리)
   add(7,
-      `모듈 현장 조립 + 강봉 연결 (${v.세대층}층, 크레인 ${v.크레인대수}대)`,
+      `모듈 현장 조립 + 접합 작업 (${v.세대층}층, 크레인 ${v.크레인대수}대)`,
       총조립기간, 조립_nw, cycleStart, 'critical',
-      `OTKCRK p.163: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 강봉 ${v.층당강봉일}일/층 (${v.강봉기간}일/모듈 × ${v.층당세대 * v.세대당모듈}모듈/층) × ${v.세대층}층 / 별표2·주말·공휴 반영`,
-      ['otkcrk_p8', 'otkcrk_p163']);
+      `OTKCRK p.163 표5-11: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 접합 ${v.층당강봉일}일/층 (수직 ${v.강봉기간}+수평 ${v.수평접합기간}일/모듈 × ${v.층당세대 * v.세대당모듈}모듈/층) × ${v.세대층}층 / 별표2·주말·공휴 반영`,
+      ['otkcrk_p8', 'otkcrk_p162', 'otkcrk_p163', 'pssem_p641']);
   // 간트 세그먼트 데이터 첨부
   s[s.length - 1].modBars  = _modBars;
   s[s.length - 1].boltBars = _boltBars;
@@ -1658,7 +1670,8 @@ function calc() {
     크레인대수:  +$('i_크레인대수').value  || 1,
     최하층속도:  +$('i_최하층속도').value  || 4,
     기준층속도:  +$('i_기준층속도').value  || 6,
-    강봉기간:    +$('i_강봉기간').value    || 0,
+    강봉기간:       +$('i_강봉기간').value       || 0,
+    수평접합기간:   +$('i_수평접합기간').value   || 0,
     별표1:       Math.min(+$('i_별표1').value || 0, 364),
     별표2:       Math.min(+$('i_별표2').value || 0, 364),
     지하층수,
@@ -1674,7 +1687,8 @@ function calc() {
   v.층당설치일_최하층 = ceil(층당모듈수 / Math.max(v.크레인대수 * v.최하층속도, 1));
   v.층당설치일_기준층 = ceil(층당모듈수 / Math.max(v.일일설치속도, 1));
   v.층당설치일    = v.층당설치일_기준층;            // 하위호환용
-  v.층당강봉일    = v.강봉기간 > 0 ? Math.max(1, ceil(층당모듈수 * v.강봉기간)) : 0;
+  const 총접합기간 = v.강봉기간 + v.수평접합기간;
+  v.층당강봉일    = 총접합기간 > 0 ? Math.max(1, ceil(층당모듈수 * 총접합기간)) : 0;
   v.층당소요일    = v.층당설치일_기준층 + v.층당강봉일;
   // 총조립기간: 1층(최하층) + 나머지(기준층)
   const 최하층소요일_calc = v.층당설치일_최하층 + v.층당강봉일;
@@ -1846,7 +1860,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
         ganttRows.push({
           noText:  '↳',
           noClass: 'orange',
-          label:   `강봉 연결 (층당 ${v.층당강봉일}일)`,
+          label:   `접합 작업 (층당 ${v.층당강봉일}일, 수직${v.강봉기간}+수평${v.수평접합기간}일/모듈)`,
           bars:    t.boltBars,
           parallel: false
         });
@@ -1959,7 +1973,7 @@ function renderMilestones(tasks, totalDays, startDate) {
     { label: '기초공사 완료',           day: tasks.find(t=>t.no===3)?.end ?? 0 },
     ...(지하골조Task ? [{ label: '지하층 골조 완료', day: 지하골조Task.end }] : []),
     { label: '코어골조 완료',           day: tasks.find(t=>t.no===4)?.end ?? 0 },
-    { label: '모듈조립+강봉 완료',      day: lastModEnd },
+    { label: '모듈조립+접합 완료',      day: lastModEnd },
     { label: '현장마감 완료',           day: 현장마감Task ? 현장마감Task.end : 0 },
     { label: '건축마감 완료',           day: 건축마감Task ? 건축마감Task.end : 0 },
     { label: '준공 (부대공사 완료)',     day: 부대공사Task ? 부대공사Task.end : totalDays - 1 },
