@@ -724,12 +724,38 @@
             </div>
           </div>
 
-          <!-- 하부공사 조건 -->
+          <!-- 토공사 (면적 비례) -->
           <div style="margin-top:16px; padding-top:14px; border-top:1px solid #EEE;">
             <div style="font-weight:700; color:#2E4057; font-size:12px; margin-bottom:10px;">
-              🏚️ 하부공사 조건 (LH 지침 기준 자동 계산)
+              🏚️ 하부공사 조건
             </div>
             <div class="input-grid">
+              <div class="input-group">
+                <label>층당 모듈 면적 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_층당모듈면적">—</span>
+                  <span class="unit">m²</span>
+                </div>
+                <span class="note-text">= 모듈 타입별 면적 합계 × 층당 세대 수 (복도·코어 제외)</span>
+              </div>
+              <div class="input-group">
+                <label>토공사 기간 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_토공사기간">—</span>
+                  <span class="unit">일</span>
+                </div>
+                <span class="note-text">= 층당 모듈 면적 × 0.326일/m² (광양 기가타운: 흙막이+굴착 155일 ÷ 476m²)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
+              </div>
+              <div class="input-group">
+                <label>기초 RC 기간 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_기초RC기간">—</span>
+                  <span class="unit">일</span>
+                </div>
+                <span class="note-text">= 층당 모듈 면적 × 0.032일/m² (광양 기가타운: 기초RC 15일 ÷ 476m²)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
+              </div>
               <div class="input-group">
                 <label>지하층 수</label>
                 <div class="input-row">
@@ -740,45 +766,8 @@
                     <option value="3">지하 3층</option>
                   </select>
                 </div>
-                <span class="note-text">터파기: 1층=10일, 추가층마다 10일 | 지하층 골조: 1층=44일, 2층=71일, 추가층+27일 (별도 산정)</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['lh_p9'])">📄 근거 보기</button>
-              </div>
-              <div class="input-group">
-                <label>기초공사 형식</label>
-                <div class="input-row">
-                  <select id="i_기초형식" onchange="onFoundationChange()">
-                    <option value="19">직타 15m 이하 (19일)</option>
-                    <option value="34">직타 16~30m (34일)</option>
-                    <option value="49">직타 30m 초과 (49일)</option>
-                    <option value="0">선굴착 (직접 입력)</option>
-                  </select>
-                </div>
-                <span class="note-text">LH 지침 p.10 (직타 기준)</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['lh_p10'])">📄 근거 보기</button>
-              </div>
-              <div class="input-group" id="g_선굴착" style="display:none">
-                <label>선굴착 기초공사 기간 (직접)</label>
-                <div class="input-row">
-                  <input type="number" id="i_기초직접" value="30" min="10" oninput="calc()">
-                  <span class="unit">일</span>
-                </div>
-                <span class="note-text">LH 지침: 별도 산출 필요</span>
-              </div>
-              <div class="input-group">
-                <label>터파기 기간 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_터파기">0</span>
-                  <span class="unit">일</span>
-                </div>
-                <span class="note-text">= 지하층 수 × 10일</span>
-              </div>
-              <div class="input-group">
-                <label>기초공사 기간 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_기초기간">19</span>
-                  <span class="unit">일</span>
-                </div>
-                <span class="note-text">= 형식별 LH 기준값</span>
+                <span class="note-text">지하층 있으면 골조 공사 별도 추가 (광양 비례: B1F 0.097일/m², B2F 0.090일/m²)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
               </div>
               <div class="input-group" id="g_지하골조" style="display:none">
                 <label>지하층 골조 기간 (자동)</label>
@@ -786,9 +775,13 @@
                   <span class="calc-val" id="r_지하골조기간">0</span>
                   <span class="unit">일 (실작업)</span>
                 </div>
-                <span class="note-text">LH 지침 2.5.2: 1층=44일, 2층=71일, 추가층+27일 / 별표2 반영</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['lh_p9'])">📄 근거 보기</button>
+                <span class="note-text">광양 기가타운 실적 비례: B1F 46일(0.097/m²), B2F 43일(0.090/m²) × 층당 면적 / 별표2 반영</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
               </div>
+            </div>
+            <div style="margin-top:8px; background:#EEF4FF; border-radius:6px; padding:8px 12px; font-size:11px; color:#555;">
+              <strong>광양 기가타운 101동 비례 기준 (476m²/층):</strong><br>
+              토공사(흙막이+굴착) 155일 = 0.326일/m² · 기초RC 15일 = 0.032일/m² · 지하B2F 43일 = 0.090일/m² · 지하B1F 46일 = 0.097일/m² · 1층·필로티 25일 = 0.053일/m²
             </div>
           </div>
         </div>
@@ -864,30 +857,53 @@
             </div>
             <div class="input-grid">
               <div class="input-group">
-                <label>① 수직 강봉 연결 (층간)</label>
+                <label>수직접합 (강봉) 소요 기간</label>
                 <div class="input-row">
-                  <input type="number" id="i_강봉기간" value="0.07" min="0" step="0.01" oninput="calc()">
+                  <input type="number" id="i_강봉기간" value="0.1" min="0" step="0.01" oninput="calc()">
                   <span class="unit">일/모듈</span>
                 </div>
-                <span class="note-text">층간 강봉 체결 — 공식 기준 없음, OTKCRK 표5-11 볼트총합(0.1일/모듈) 기반 추정</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163','pssem_p641'])">📄 근거 보기</button>
+                <span class="note-text">★ OTKCRK 표5-11: 볼트체결(본조립) 2일/20모듈 = <b>0.10일/모듈</b> (천안두정 실적) — 수직접합 기준</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
-                <label>② 수평 접합 (동일층 인접 모듈)</label>
-                <div class="input-row">
-                  <input type="number" id="i_수평접합기간" value="0.03" min="0" step="0.01" oninput="calc()">
-                  <span class="unit">일/모듈</span>
-                </div>
-                <span class="note-text">같은 층 모듈 간 볼트 체결 — 공식 기준 없음, OTKCRK 표5-10·5-11 기반 추정</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p162','otkcrk_p163','pssem_p641'])">📄 근거 보기</button>
-              </div>
-              <div class="input-group">
-                <label>층당 접합 합계 (자동)</label>
+                <label>층당 수직접합 기간 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_층당강봉일">1</span>
                   <span class="unit">일/층</span>
                 </div>
-                <span class="note-text">= CEILING((수직+수평) × 층당 모듈 수)</span>
+                <span class="note-text">= CEILING(수직접합 × 층당 모듈 수)</span>
+              </div>
+              <div class="input-group">
+                <label>수평접합부 수</label>
+                <div class="input-row">
+                  <input type="number" id="i_수평접합부" value="0" min="0" oninput="calc()">
+                  <span class="unit">접합부 (전체 동)</span>
+                </div>
+                <span class="note-text">배치 보고 직접 입력. 예: 층당 n모듈 1열 배치 → (n−1)×세대층</span>
+              </div>
+              <div class="input-group">
+                <label>수평접합 소요 기간</label>
+                <div class="input-row">
+                  <input type="number" id="i_수평접합속도" value="0.5" min="0" step="0.1" oninput="calc()">
+                  <span class="unit">일/접합부</span>
+                </div>
+                <span class="note-text">접합부 1개당 소요 기간 (추정값 — 별도 공식 기준 없음)</span>
+              </div>
+              <div class="input-group">
+                <label>층당 수평접합 기간 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_층당수평접합일">0</span>
+                  <span class="unit">일/층</span>
+                </div>
+                <span class="note-text">= CEILING(수평접합부 ÷ 세대층 × 일/접합부)</span>
+              </div>
+              <div class="input-group">
+                <label>층당 접합 합계 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_층당접합일합계">1</span>
+                  <span class="unit">일/층 (수직+수평)</span>
+                </div>
+                <span class="note-text">= 수직접합 + 수평접합</span>
               </div>
               <div class="input-group">
                 <label>층당 모듈 설치일 (자동)</label>
@@ -1115,10 +1131,9 @@ const REFS = {
   otkcrk_p149: { label: 'OTKCRK p.149 — 공사 준비기간(계속)',    img: 'refs/otkcrk_p149.png' },
   otkcrk_p153: { label: 'OTKCRK p.153 — 코어골조 8일/층 근거',  img: 'refs/otkcrk_p153.png' },
   otkcrk_p156: { label: 'OTKCRK p.156 — 부대공사 기준',         img: 'refs/otkcrk_p156.png' },
-  otkcrk_p162: { label: 'OTKCRK p.162 — 표5-10 인필식 현장조립 소요기간 (세대 간 접합 10일/36모듈)', img: 'refs/otkcrk_p162.png' },
   otkcrk_p163: { label: 'OTKCRK p.163 — 표5-11 적층식 현장조립 기준(안) (볼트체결 2일/20모듈)', img: 'refs/otkcrk_p163.png' },
   otkcrk_p212: { label: 'OTKCRK p.212 — 부록 3.3 상부공사기간 (옥탑 8일)', img: 'refs/otkcrk_p212.png' },
-  pssem_p641:  { label: '건설공사 표준품셈(2021) p.641 — 강구조 1-2-3 고장력 볼트 본조임 기준', img: 'refs/pssem_p641.png' },
+  gwangyang_structure: { label: '광양생활관 공정표 — 101동 구조체+모듈러 (1층 25일 실적)', img: 'refs/gwangyang_structure.png' },
   lh_p7:   { label: 'LH 지침 p.7 — 조경공사 25일 및 준비기간 30일', img: 'refs/lh_p7.png' },
   lh_p9:   { label: 'LH 지침 p.9 — 터파기 기간 (2.4.1)',        img: 'refs/lh_p9.png' },
   lh_p10:  { label: 'LH 지침 p.10 — 기초공사 (2.5.1) + 지하층 골조 기간 (2.5.2)', img: 'refs/lh_p10.png' },
@@ -1416,15 +1431,11 @@ function buildTasks(v) {
     'OTKCRK p.148-149: 30일, 비작업일 미적용',
     ['otkcrk_p148', 'otkcrk_p149']);
 
-  // 2. 터파기 (지하층이 있을 때만)
-  let afterExcavEnd = task(1).end; // 기초공사 시작 기준점
-  if (v.터파기기간 > 0) {
-    const 지하층수 = Math.round(v.터파기기간 / 10);
-    add(2, `터파기 (지하 ${지하층수}층)`, v.터파기기간, 0, task(1).end + 1, 'critical',
-      `LH 지침 p.9: 지하 ${지하층수}층 × 10일 = ${v.터파기기간}일 (비작업일 포함)`,
-      ['lh_p9']);
-    afterExcavEnd = task(2).end;
-  }
+  // 2. 토공사 (터파기+기초, 광양 기가타운 실적 면적 비례)
+  add(2, `토공사 (흙막이+굴착, 층당 ${v.층당모듈면적.toFixed(0)}m²)`,
+      v.토공사기간, 0, task(1).end + 1, 'critical',
+      `광양 기가타운 101동 실적: 흙막이 착수~터파기 완료 155일 ÷ 층당 모듈 면적 476m²(20모듈×7m×3.4m) = 0.326일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${v.토공사기간}일 (달력 기간, 비작업일 포함값)`,
+      ['gwangyang_structure']);
 
   // 달력 환산 헬퍼 ─ 실작업일 → 달력기간
   // LH 지침 별표1/2 = 연간 총 비작업일 (주말·공휴·기상 통합)
@@ -1440,70 +1451,77 @@ function buildTasks(v) {
     return Math.max(r, ceil(r * 365 / w));
   }
 
-  // 3. 기초공사
-  const 기초형식명 = {19: '직타 15m이하', 34: '직타 16~30m', 49: '직타 30m초과'}[v.기초기간]
-                    || `선굴착 (${v.기초기간}일)`;
-  const t3_nw    = cal1(v.기초기간) - v.기초기간;
-  add(3, `기초공사 (${기초형식명})`, v.기초기간, t3_nw, afterExcavEnd + 1, 'critical',
-    `LH 지침 p.10: 실작업 ${v.기초기간}일 / 별표1·주말·공휴 반영`,
-    ['lh_p10', 'lh_p16', 'lh_p17']);
+  // 3. 기초 RC (파일캡·매트, 토공사 완료 후 착수)
+  const t2_5_real = Math.max(1, ceil(v.층당모듈면적 * 0.032));
+  add(2.5, `기초 RC (파일캡·매트, 층당 ${v.층당모듈면적.toFixed(0)}m²)`,
+      t2_5_real, 0, task(2).end + 1, 'critical',
+      `광양 기가타운 101동 실적: 기초RC 15일 ÷ 층당 모듈 면적 476m² = 0.032일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${t2_5_real}일 (달력 기간 포함)`,
+      ['gwangyang_structure']);
 
-  // 3-1. 지하층 골조 (지하층 있을 때만, 기초공사 완료 후 착수)
-  let afterFoundEnd = task(3).end;
+  // 4. 지하층 골조 (지하층 있을 때만, 기초RC 완료 후 착수) — 광양 기가타운 면적 비례
+  let afterFoundEnd = task(2.5).end;
   if (v.지하층수 > 0) {
-    const 지하골조_real = v.지하층수 === 1 ? 44
-                        : v.지하층수 === 2 ? 71
-                        : 71 + (v.지하층수 - 2) * 27;
-    const 지하골조_nw = cal2(지하골조_real) - 지하골조_real;
+    const 지하골조_factor = v.지하층수 === 1 ? 0.097
+                          : v.지하층수 === 2 ? 0.187
+                          : 0.187 + (v.지하층수 - 2) * 0.090;
+    const 지하골조_real = Math.max(1, ceil(v.층당모듈면적 * 지하골조_factor));
+    const 지하골조_nw = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
     add(3.5, `지하층 골조 (지하 ${v.지하층수}층)`,
-        지하골조_real, 지하골조_nw, task(3).end + 1, 'critical',
-        `LH 지침 2.5.2: 지하 ${v.지하층수}층 실작업 ${지하골조_real}일 (1층=44일·2층=71일·추가층+27일) / 별표2·주말·공휴 반영`,
-        ['lh_p10', 'lh_p18', 'lh_p19']);
+        지하골조_real, 지하골조_nw, task(2.5).end + 1, 'critical',
+        `광양 기가타운 실적: B2F 43일(0.090일/m²)·B1F 46일(0.097일/m²) × ${v.층당모듈면적.toFixed(0)}m² = ${지하골조_real}일 (달력 기간, 광양 비작업일 포함)`,
+        ['gwangyang_structure']);
     afterFoundEnd = s[s.length - 1].end;
   }
 
-  // 4. 코어 골조
-  const t4_real = 8 * v.총층수;
-  const t4_nw   = cal2(t4_real) - t4_real;
-  add(4, `코어 골조 (1~${v.총층수}층)`, t4_real, t4_nw, afterFoundEnd + 1, 'critical',
-    `OTKCRK p.153: 8일/층 × ${v.총층수}층 / 별표2·주말·공휴 반영`,
-    ['otkcrk_p153', 'lh_p18', 'lh_p19']);
+  // 5. 1층·필로티 골조 (기초RC+지하층골조 완료 후 착수) — 광양 기가타운 면적 비례
+  const t3_real = Math.max(1, ceil(v.층당모듈면적 * 0.053));
+  const t3_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
+  add(3, '1층·필로티 골조', t3_real, t3_nw, afterFoundEnd + 1, 'critical',
+    `광양 기가타운 실적: 1층(5.0m) 25일 ÷ 층당 모듈 면적 476m² = 0.053일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${t3_real}일 (달력 기간, 광양 비작업일 포함)`,
+    ['gwangyang_structure']);
+  const afterPilotiEnd = s[s.length - 1].end;
+
+  // 4. 코어 골조 (1층·필로티 완료 후 착수)
+  const t4_real = 6 * v.총층수;
+  const t4_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
+  add(4, `코어 골조 (1~${v.총층수}층)`, t4_real, t4_nw, afterPilotiEnd + 1, 'critical',
+    `광양 기가타운 실적: 코어 3~12층 60일 ÷ 10층 = 6일/층 × ${v.총층수}층 (달력 기간, 광양 비작업일 포함)`,
+    ['gwangyang_structure']);
 
   // 5. 옥탑 골조
-  const t5_real = 8;   // OTKCRK p.212 부록 3.3: "옥탑의 공사기간은 코어와 동일하게 실작업일수를 8일"
-  const t5_nw   = cal2(t5_real) - t5_real;
+  const t5_real = 11;  // 광양 기가타운 실적: 옥상 골조 11일 (WBS 6.1.1.6.5)
+  const t5_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
   add(5, '옥탑 골조', t5_real, t5_nw, task(4).end + 1, 'normal',
-    'OTKCRK p.212 부록 3.3: 실작업 8일(코어와 동일) / 별표2·주말·공휴 반영',
-    ['otkcrk_p212', 'lh_p18', 'lh_p19']);
+    '광양 기가타운 실적: 옥상 골조 11일 WBS 6.1.1.6.5 (달력 기간, 광양 비작업일 포함)',
+    ['gwangyang_structure']);
 
-  // 6. 베이스플레이트 (기초+지하층골조 완료 후, 코어골조와 병행)
-  add(6, '베이스플레이트 설치', 5, 0, afterFoundEnd + 1, 'normal',
-    'OTKCRK p.135 표4-39+p.163 표5-11: 앵커볼트(2일)+베이스플레이트(2일)+무수축몰탈(1일) = 실작업 5일 / 기초·지하층골조 완료 후 착수 (코어골조와 병행)',
+  // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행)
+  add(6, '베이스플레이트 설치', 5, 0, afterPilotiEnd + 1, 'normal',
+    'OTKCRK p.135 표4-39+p.163 표5-11: 앵커볼트(2일)+베이스플레이트(2일)+무수축몰탈(1일) = 실작업 5일 / 1층·필로티 완료 후 착수 (코어골조와 병행)',
     ['otkcrk_p135', 'otkcrk_p163'], true);
 
-  // ── 7. 모듈 현장 조립 + 강봉 연결 (층별 순차) ──────────────────────────
+  // ── 7. 모듈 현장 조립 + 접합 작업 (층별 순차: 인양 → 수직접합(강봉) → 수평접합) ──
   const cycleStart = max(task(4).end, task(6).end) + 1; // 코어골조 AND 베이스플레이트 완료 후
   const 층당설치일_최하 = v.층당설치일_최하층;
   const 층당설치일_기준 = v.층당설치일_기준층;
-  const 최하층소요일 = 층당설치일_최하 + v.층당강봉일;
-  const 기준층소요일 = 층당설치일_기준 + v.층당강봉일;
+  const 최하층소요일 = 층당설치일_최하 + v.층당접합일;
+  const 기준층소요일 = 층당설치일_기준 + v.층당접합일;
   const 총조립기간 = v.총조립기간;
 
-  // ── 별표2 기반 달력 환산 (OTKCRK p.8: 모듈 현장조립 "기상요인 반영") ──
-  const 달_최하층소요일 = cal2(최하층소요일);
-  const 달_기준층소요일 = cal2(기준층소요일);
-  // 달력 소요일을 설치/강봉 비율로 분리
+  // ── 별표2 기반 달력 환산: 총실작업일에 cal2 1회 적용 → 층별 비례 분배 (ceiling 누적 방지) ──
+  const 달_총조립기간 = 총조립기간 > 0 ? cal2(총조립기간) : 0;
+  const 달_비율 = 총조립기간 > 0 ? 달_총조립기간 / 총조립기간 : 1;
+  const 달_최하층소요일 = 최하층소요일 > 0 ? Math.max(1, Math.round(최하층소요일 * 달_비율)) : 0;
+  const 달_기준층소요일 = 기준층소요일 > 0 ? Math.max(1, Math.round(기준층소요일 * 달_비율)) : 0;
+  // 달력 소요일을 설치/접합 비율로 분리
   const 달_최하설치일 = 최하층소요일 > 0
     ? Math.max(1, Math.round(달_최하층소요일 * 층당설치일_최하 / 최하층소요일))
     : 달_최하층소요일;
   const 달_기준설치일 = 기준층소요일 > 0
     ? Math.max(1, Math.round(달_기준층소요일 * 층당설치일_기준 / 기준층소요일))
     : 달_기준층소요일;
-  const 달_최하강봉일 = 달_최하층소요일 - 달_최하설치일;
-  const 달_기준강봉일 = 달_기준층소요일 - 달_기준설치일;
-  const 달_총조립기간 = v.세대층 > 0
-    ? 달_최하층소요일 + Math.max(v.세대층 - 1, 0) * 달_기준층소요일
-    : 0;
+  const 달_최하접합일 = 달_최하층소요일 - 달_최하설치일;
+  const 달_기준접합일 = 달_기준층소요일 - 달_기준설치일;
   const 조립_nw = 달_총조립기간 - 총조립기간;
 
   const lastAssemblyEnd = 달_총조립기간 > 0 ? cycleStart + 달_총조립기간 - 1 : cycleStart;
@@ -1520,14 +1538,17 @@ function buildTasks(v) {
   let fOffset = 0;
   for (let f = 0; f < v.세대층; f++) {
     const 달_설치일 = f === 0 ? 달_최하설치일 : 달_기준설치일;
-    const 달_강봉일 = f === 0 ? 달_최하강봉일 : 달_기준강봉일;
+    const 달_접합일 = f === 0 ? 달_최하접합일 : 달_기준접합일;
     const 달_층소요일 = f === 0 ? 달_최하층소요일 : 달_기준층소요일;
     const fStart = cycleStart + fOffset;
     _modBars.push({ start: fStart, total: 달_설치일, type: 'critical',
                     name: `${f+1}층 모듈 조립 (${달_설치일}일)` });
-    if (총접합기간 > 0) {
-      _boltBars.push({ start: fStart + 달_설치일, total: Math.max(1, 달_강봉일), type: 'orange',
-                       name: `${f+1}층 접합 작업 (${Math.max(1, 달_강봉일)}일, 수직${v.강봉기간}+수평${v.수평접합기간}일/모듈)` });
+    if (v.층당접합일 > 0) {
+      const 접합라벨 = v.층당수평접합일 > 0
+        ? `${f+1}층 접합 (수직${v.층당강봉일}+수평${v.층당수평접합일}일)`
+        : `${f+1}층 수직접합 (${Math.max(1, 달_접합일)}일)`;
+      _boltBars.push({ start: fStart + 달_설치일, total: Math.max(1, 달_접합일), type: 'orange',
+                       name: 접합라벨 });
     }
     fOffset += 달_층소요일;
   }
@@ -1536,8 +1557,8 @@ function buildTasks(v) {
   add(7,
       `모듈 현장 조립 + 접합 작업 (${v.세대층}층, 크레인 ${v.크레인대수}대)`,
       총조립기간, 조립_nw, cycleStart, 'critical',
-      `OTKCRK p.163 표5-11: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 접합 ${v.층당강봉일}일/층 (수직 ${v.강봉기간}+수평 ${v.수평접합기간}일/모듈 × ${v.층당세대 * v.세대당모듈}모듈/층) × ${v.세대층}층 / 별표2·주말·공휴 반영`,
-      ['otkcrk_p8', 'otkcrk_p162', 'otkcrk_p163', 'pssem_p641']);
+      `OTKCRK p.163 표5-11: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 수직접합(강봉) ${v.층당강봉일}일/층 (${v.강봉기간}일/모듈 × ${v.층당세대 * v.세대당모듈}모듈/층)${v.층당수평접합일 > 0 ? ` + 수평접합 ${v.층당수평접합일}일/층 (${v.수평접합부}접합부÷${v.세대층}층×${v.수평접합속도}일)` : ''} × ${v.세대층}층 / 별표2·주말·공휴 반영`,
+      ['otkcrk_p163', 'otkcrk_p8']);
   // 간트 세그먼트 데이터 첨부
   s[s.length - 1].modBars  = _modBars;
   s[s.length - 1].boltBars = _boltBars;
@@ -1547,7 +1568,7 @@ function buildTasks(v) {
   // 지붕 트러스 (모듈+강봉 완료 AND 옥탑골조 완료 중 늦은 것)
   add(taskNo++, '지붕 트러스 조립', 3, 0, max(lastAssemblyEnd, task(5).end) + 1, 'critical',
     'OTKCRK p.163 표5-11 공기산정기준(안): 실작업 3일 (※ p.135 표4-39 천안두정 실적은 2일)',
-    ['otkcrk_p163']);
+    ['otkcrk_p163', 'otkcrk_p135']);
 
   // 지붕 패널·방수시트: 층당 모듈 수에 비례 (지붕 면적 비례)
   // 기준: OTKCRK p.135 표4-39 — 층당 10모듈(2세대×5모듈) 기준 패널3일·방수2일
@@ -1643,24 +1664,8 @@ function onRegionChange() {
   calc();
 }
 
-function onFoundationChange() {
-  const val = $('i_기초형식').value;
-  $('g_선굴착').style.display = (val === '0') ? '' : 'none';
-  calc();
-}
-
 // ── 메인 계산 ─────────────────────────────────────────────────────────────
 function calc() {
-  // 지하층 수 → 터파기 기간 (LH 지침: 1층=10일, 매층 +10일)
-  const 지하층수 = +$('i_지하층').value || 0;
-  const 터파기기간 = 지하층수 * 10;
-
-  // 기초공사 기간 (선택값 or 직접입력)
-  const 기초형식값 = +$('i_기초형식').value;
-  const 기초기간   = 기초형식값 === 0
-    ? (+$('i_기초직접').value || 30)
-    : 기초형식값;
-
   const v = {
     세대층:      +$('i_세대층').value      || 0,
     층당세대:    +$('i_층당세대').value    || 0,
@@ -1670,13 +1675,11 @@ function calc() {
     크레인대수:  +$('i_크레인대수').value  || 1,
     최하층속도:  +$('i_최하층속도').value  || 4,
     기준층속도:  +$('i_기준층속도').value  || 6,
-    강봉기간:       +$('i_강봉기간').value       || 0,
-    수평접합기간:   +$('i_수평접합기간').value   || 0,
-    별표1:       Math.min(+$('i_별표1').value || 0, 364),
-    별표2:       Math.min(+$('i_별표2').value || 0, 364),
-    지하층수,
-    터파기기간,
-    기초기간,
+    강봉기간:      +$('i_강봉기간').value      || 0,
+    수평접합부:    +$('i_수평접합부').value    || 0,
+    수평접합속도:  +$('i_수평접합속도').value  || 0,
+    별표1:         Math.min(+$('i_별표1').value || 0, 364),
+    별표2:         Math.min(+$('i_별표2').value || 0, 364),
   };
   // 강봉 연결 방식 — 구조전용층 없음
   v.총층수        = v.세대층;
@@ -1687,26 +1690,52 @@ function calc() {
   v.층당설치일_최하층 = ceil(층당모듈수 / Math.max(v.크레인대수 * v.최하층속도, 1));
   v.층당설치일_기준층 = ceil(층당모듈수 / Math.max(v.일일설치속도, 1));
   v.층당설치일    = v.층당설치일_기준층;            // 하위호환용
-  const 총접합기간 = v.강봉기간 + v.수평접합기간;
-  v.층당강봉일    = 총접합기간 > 0 ? Math.max(1, ceil(층당모듈수 * 총접합기간)) : 0;
-  v.층당소요일    = v.층당설치일_기준층 + v.층당강봉일;
+  v.층당강봉일    = v.강봉기간 > 0 ? Math.max(1, ceil(층당모듈수 * v.강봉기간)) : 0;
+  // 수평접합: 배치 기반 직접 입력, 층별 순차 (수직접합 직후 진행)
+  v.층당수평접합일 = v.세대층 > 0 && v.수평접합부 > 0 && v.수평접합속도 > 0
+    ? Math.max(1, ceil(v.수평접합부 / v.세대층 * v.수평접합속도))
+    : 0;
+  v.층당접합일    = v.층당강봉일 + v.층당수평접합일;  // 수직접합 + 수평접합 합산
+  v.층당소요일    = v.층당설치일_기준층 + v.층당접합일;
   // 총조립기간: 1층(최하층) + 나머지(기준층)
-  const 최하층소요일_calc = v.층당설치일_최하층 + v.층당강봉일;
-  const 기준층소요일_calc = v.층당설치일_기준층 + v.층당강봉일;
+  const 최하층소요일_calc = v.층당설치일_최하층 + v.층당접합일;
+  const 기준층소요일_calc = v.층당설치일_기준층 + v.층당접합일;
   v.총조립기간    = v.세대층 > 0
     ? 최하층소요일_calc + Math.max(v.세대층 - 1, 0) * 기준층소요일_calc
     : 0;
+
+  // 지하층 수
+  v.지하층수 = +$('i_지하층').value || 0;
+
+  // 토공사 기간 (광양 기가타운 실적 면적 비례: 155일 ÷ 476m² = 0.326일/m²)
+  v.층당모듈면적 = moduleTypes.reduce(function(s,t){ return s + (t.w||0)*(t.l||0)*(t.n||0); }, 0) * v.층당세대;
+  v.토공사기간   = Math.max(1, Math.ceil(v.층당모듈면적 * 0.326));
 
   // 입력 섹션 표시 갱신
   $('r_총층수').textContent         = v.총층수;
   $('r_총세대').textContent         = v.총세대;
   $('r_총모듈').textContent         = v.총모듈;
+  $('r_층당모듈면적').textContent   = v.층당모듈면적.toFixed(1);
+  v.기초RC기간 = Math.max(1, Math.ceil(v.층당모듈면적 * 0.032));
+  $('r_토공사기간').textContent     = v.토공사기간;
+  $('r_기초RC기간').textContent     = v.기초RC기간;
+  const 지하골조_factor_disp = v.지하층수 === 0 ? 0
+    : v.지하층수 === 1 ? 0.097
+    : v.지하층수 === 2 ? 0.187
+    : 0.187 + (v.지하층수 - 2) * 0.090;
+  const 지하골조기간_real = v.지하층수 === 0 ? 0
+    : Math.max(1, Math.ceil(v.층당모듈면적 * 지하골조_factor_disp));
+  $('r_지하골조기간').textContent   = 지하골조기간_real;
+  const gDiv = $('g_지하골조');
+  if (gDiv) gDiv.style.display = v.지하층수 > 0 ? '' : 'none';
 
-  $('r_일일설치속도').textContent   = v.일일설치속도;
-  $('r_최하층설치일').textContent   = v.층당설치일_최하층;
-  $('r_기준층설치일').textContent   = v.층당설치일_기준층;
-  $('r_층당강봉일').textContent     = v.층당강봉일;
-  $('r_총조립기간').textContent     = v.총조립기간;
+  $('r_일일설치속도').textContent       = v.일일설치속도;
+  $('r_최하층설치일').textContent       = v.층당설치일_최하층;
+  $('r_기준층설치일').textContent       = v.층당설치일_기준층;
+  $('r_층당강봉일').textContent         = v.층당강봉일;
+  $('r_층당수평접합일').textContent     = v.층당수평접합일;
+  $('r_층당접합일합계').textContent     = v.층당접합일;
+  $('r_총조립기간').textContent         = v.총조립기간;
 
   // 크레인 양중 적합성 검토 (양중 중량 = 모듈 중량 × 1.25)
   (function() {
@@ -1724,16 +1753,6 @@ function calc() {
     el.style.background = bg;
     el.style.color = color;
   })();
-  $('r_터파기').textContent         = 터파기기간;
-  $('r_기초기간').textContent       = 기초기간;
-  const 지하골조기간_real = 지하층수 === 0 ? 0
-    : 지하층수 === 1 ? 44
-    : 지하층수 === 2 ? 71
-    : 71 + (지하층수 - 2) * 27;
-  $('r_지하골조기간').textContent   = 지하골조기간_real;
-  const gDiv = $('g_지하골조');
-  if (gDiv) gDiv.style.display = 지하층수 > 0 ? '' : 'none';
-
   // 공종 계산
   const tasks = buildTasks(v);
   const totalDays = max(...tasks.map(t => t.end)) + 1;
@@ -1860,7 +1879,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
         ganttRows.push({
           noText:  '↳',
           noClass: 'orange',
-          label:   `접합 작업 (층당 ${v.층당강봉일}일, 수직${v.강봉기간}+수평${v.수평접합기간}일/모듈)`,
+          label:   `접합 작업 (층당 ${v.층당강봉일}일, ${v.강봉기간}일/모듈)`,
           bars:    t.boltBars,
           parallel: false
         });
@@ -1970,8 +1989,9 @@ function renderMilestones(tasks, totalDays, startDate) {
   const 부대공사Task  = tasks.find(t => t.name.startsWith('부대공사'));
   const ms = [
     { label: '착공',                    day: 0 },
-    { label: '기초공사 완료',           day: tasks.find(t=>t.no===3)?.end ?? 0 },
+    { label: '토공사 완료',             day: tasks.find(t=>t.no===2)?.end ?? 0 },
     ...(지하골조Task ? [{ label: '지하층 골조 완료', day: 지하골조Task.end }] : []),
+    { label: '1층·필로티 골조 완료',    day: tasks.find(t=>t.no===3)?.end ?? 0 },
     { label: '코어골조 완료',           day: tasks.find(t=>t.no===4)?.end ?? 0 },
     { label: '모듈조립+접합 완료',      day: lastModEnd },
     { label: '현장마감 완료',           day: 현장마감Task ? 현장마감Task.end : 0 },
