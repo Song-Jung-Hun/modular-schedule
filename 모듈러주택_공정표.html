@@ -1891,12 +1891,12 @@ function renderSchedule(tasks, totalDays, startDate) {
   const tr = document.createElement('tr');
   tr.className = 'total-row';
   tr.innerHTML = `
-    <td colspan="2" style="text-align:center">합계 (크리티컬 패스 기준)</td>
+    <td colspan="2" style="text-align:center">합계</td>
     <td class="num-col">${totalReal}일</td>
     <td class="num-col">${totalNW}일</td>
     <td class="num-col">${totalDays}일</td>
     <td colspan="3" style="text-align:center; font-size:11px; opacity:0.8">
-      달력일 = 실작업일 + 비작업일
+      실작업·비작업 = 전체 공종 합(병행 포함) · 총공사기간 = 크리티컬 패스 달력(병행 반영)
     </td>
   `;
   tbody.appendChild(tr);
