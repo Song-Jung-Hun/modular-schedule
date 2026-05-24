@@ -739,13 +739,21 @@
                 <span class="note-text">= 모듈 타입별 면적 합계 × 층당 세대 수 (복도·코어 제외)</span>
               </div>
               <div class="input-group">
+                <label>건물 1층 바닥면적 (footprint)</label>
+                <div class="input-row">
+                  <input type="number" id="i_바닥면적" value="0" min="0" oninput="calc()">
+                  <span class="unit">m²</span>
+                </div>
+                <span class="note-text">토공·기초·저층 골조의 비례 기준 (실제 건물 1층 바닥면적). <b>0이면 층당 모듈 면적으로 대체</b> (기존 동작 유지)</span>
+              </div>
+              <div class="input-group">
                 <label>토공사 기간 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_토공사기간">—</span>
                   <span class="unit">일</span>
                 </div>
-                <span class="note-text">= 층당 모듈 면적 × 0.326일/m² (광양 기가타운: 흙막이+굴착 155일 ÷ 476m²)</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
+                <span class="note-text">= 바닥면적 × 0.0642일/m² (켄텍: 토공 45일 ÷ 1층 슬래브 701m² / ※ 지하 깊은 굴착 포함값)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
                 <label>기초 RC 기간 (자동)</label>
@@ -753,8 +761,8 @@
                   <span class="calc-val" id="r_기초RC기간">—</span>
                   <span class="unit">일</span>
                 </div>
-                <span class="note-text">= 층당 모듈 면적 × 0.032일/m² (광양 기가타운: 기초RC 15일 ÷ 476m²)</span>
-                <button class="ref-btn ref-btn-inline" onclick="openRef(['gwangyang_structure'])">📄 근거 보기</button>
+                <span class="note-text">= 바닥면적 × 0.0328일/m² (켄텍: 기초 23일 ÷ 1층 슬래브 701m²)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
                 <label>지하층 수</label>
@@ -780,8 +788,48 @@
               </div>
             </div>
             <div style="margin-top:8px; background:#EEF4FF; border-radius:6px; padding:8px 12px; font-size:11px; color:#555;">
-              <strong>광양 기가타운 101동 비례 기준 (476m²/층):</strong><br>
-              토공사(흙막이+굴착) 155일 = 0.326일/m² · 기초RC 15일 = 0.032일/m² · 지하B2F 43일 = 0.090일/m² · 지하B1F 46일 = 0.097일/m² · 1층·필로티 25일 = 0.053일/m²
+              <strong>켄텍 대학원숙소 비례 기준 (1층 슬래브 701m²):</strong> 바닥면적 입력 기준<br>
+              토공사(굴착+파일) 45일 = 0.0642일/m² · 기초RC 23일 = 0.0328일/m² · 1층·필로티 29일 = 0.0414일/m²<br>
+              <span style="color:#888;">※ 지하층 골조는 아직 광양 기준 유지 (B2F 0.090·B1F 0.097일/m², 층당 모듈 면적 기준)</span>
+            </div>
+          </div>
+
+          <!-- 상부 골조(코어) 조건 — 코어병행형: RC/철골 코어 + 모듈 병행 설치 -->
+          <div style="margin-top:16px; padding-top:14px; border-top:1px solid #EEE;">
+            <div style="font-weight:700; color:#2E4057; font-size:12px; margin-bottom:10px;">
+              🧱 상부 골조(코어) 조건 — 코어병행형
+            </div>
+            <div class="input-grid">
+              <div class="input-group">
+                <label>코어 골조 면적 (거푸집 기준)</label>
+                <div class="input-row">
+                  <input type="number" id="i_코어골조면적" value="696" min="0" oninput="calc()">
+                  <span class="unit">m²/층</span>
+                </div>
+                <span class="note-text">★ 켄텍 기준층 거푸집 696m² → C/D 9일. 같은 인부조에 면적만 바꿔 공기 산출</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
+              </div>
+              <div class="input-group">
+                <label>코어 골조 기간 (자동)</label>
+                <div class="input-row">
+                  <span class="calc-val" id="r_코어층당일">9</span>
+                  <span class="unit">일/층</span>
+                </div>
+                <div class="input-row" style="margin-top:4px;">
+                  <span class="calc-val" id="r_코어총기간">—</span>
+                  <span class="unit">일 (총 코어)</span>
+                </div>
+                <span class="note-text">= CEILING(코어면적 × 9÷696) × 총층수 (달력 기간, 켄텍 가동율 63.7% 포함)</span>
+              </div>
+              <div class="input-group">
+                <label>코어 선행 일수 (모듈 착수 오프셋)</label>
+                <div class="input-row">
+                  <input type="number" id="i_코어선행일" value="14" min="0" oninput="calc()">
+                  <span class="unit">일</span>
+                </div>
+                <span class="note-text">코어 착수 후 n일 뒤 모듈 설치 시작 → 이후 병행. 광양=큰값(거의 완료 후), 켄텍=작은값(조기 병행)</span>
+                <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_gantt'])">📄 근거 보기</button>
+              </div>
             </div>
           </div>
         </div>
@@ -821,8 +869,8 @@
                 <input type="number" id="i_최하층속도" value="4" min="1" oninput="calc()">
                 <span class="unit">유닛/일</span>
               </div>
-              <span class="note-text">OTKCRK p.163 — 최하층 4~5/일 (지반 앵커볼트 작업 포함)</span>
-              <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163'])">📄 근거 보기</button>
+              <span class="note-text">★ OTKCRK p.163: 최하층 4~5개/일 (순수 양중, 접합 별도) / 참고: 켄텍은 접합 포함 5개/일</span>
+              <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163','kentech_module'])">📄 근거 보기</button>
             </div>
             <div class="input-group">
               <label>기준층 설치 속도 (크레인 1대)</label>
@@ -830,8 +878,8 @@
                 <input type="number" id="i_기준층속도" value="6" min="1" oninput="calc()">
                 <span class="unit">유닛/일</span>
               </div>
-              <span class="note-text">★ OTKCRK p.163 기준 (2~n층)</span>
-              <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163'])">📄 근거 보기</button>
+              <span class="note-text">★ OTKCRK p.163: 기준층 6개/일 (순수 양중, 접합 별도) / 참고: 켄텍은 접합 포함 5개/일</span>
+              <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163','kentech_module'])">📄 근거 보기</button>
             </div>
             <div class="input-group">
               <label>기준층 총 일일 속도 (자동)</label>
@@ -1134,6 +1182,11 @@ const REFS = {
   otkcrk_p163: { label: 'OTKCRK p.163 — 표5-11 적층식 현장조립 기준(안) (볼트체결 2일/20모듈)', img: 'refs/otkcrk_p163.png' },
   otkcrk_p212: { label: 'OTKCRK p.212 — 부록 3.3 상부공사기간 (옥탑 8일)', img: 'refs/otkcrk_p212.png' },
   gwangyang_structure: { label: '광양생활관 공정표 — 101동 구조체+모듈러 (1층 25일 실적)', img: 'refs/gwangyang_structure.png' },
+  kentech_core:   { label: '켄텍 대학원숙소 공기산정표 — 토공·기초·골조 작업조 생산성 (코어병행형)', img: 'refs/kentech_core.png' },
+  kentech_module: { label: '켄텍 대학원숙소 공기산정표 — 모듈러 설치 5개/일·1조', img: 'refs/kentech_module.png' },
+  kentech_core:   { label: '켄텍 2-2단계 대학원숙소 — 코어 골조 산정근거 (기준층 거푸집 696m² → C/D 9일)', img: 'refs/kentech_core.png' },
+  kentech_module: { label: '켄텍 2-2단계 대학원숙소 — 모듈러 설치 산정근거 (135개, 5개/일·1조 → 27작업일)', img: 'refs/kentech_module.png' },
+  kentech_gantt:  { label: '켄텍 2-2단계 대학원숙소 — 예정공정표 (코어+모듈 병행)', img: 'refs/kentech_gantt.png' },
   lh_p7:   { label: 'LH 지침 p.7 — 조경공사 25일 및 준비기간 30일', img: 'refs/lh_p7.png' },
   lh_p9:   { label: 'LH 지침 p.9 — 터파기 기간 (2.4.1)',        img: 'refs/lh_p9.png' },
   lh_p10:  { label: 'LH 지침 p.10 — 기초공사 (2.5.1) + 지하층 골조 기간 (2.5.2)', img: 'refs/lh_p10.png' },
@@ -1432,10 +1485,10 @@ function buildTasks(v) {
     ['otkcrk_p148', 'otkcrk_p149']);
 
   // 2. 토공사 (터파기+기초, 광양 기가타운 실적 면적 비례)
-  add(2, `토공사 (흙막이+굴착, 층당 ${v.층당모듈면적.toFixed(0)}m²)`,
+  add(2, `토공사 (굴착+파일, 바닥 ${v.바닥면적.toFixed(0)}m²)`,
       v.토공사기간, 0, task(1).end + 1, 'critical',
-      `광양 기가타운 101동 실적: 흙막이 착수~터파기 완료 155일 ÷ 층당 모듈 면적 476m²(20모듈×7m×3.4m) = 0.326일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${v.토공사기간}일 (달력 기간, 비작업일 포함값)`,
-      ['gwangyang_structure']);
+      `켄텍 대학원숙소 실적: 토공사(굴착+파일) C/D 45일 ÷ 1층 슬래브 701m² = 0.0642일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${v.토공사기간}일 (달력 기간 포함 / ※ 켄텍은 지하2층 깊은 굴착 포함 — 지하 없으면 과다 가능)`,
+      ['kentech_core']);
 
   // 달력 환산 헬퍼 ─ 실작업일 → 달력기간
   // LH 지침 별표1/2 = 연간 총 비작업일 (주말·공휴·기상 통합)
@@ -1452,11 +1505,11 @@ function buildTasks(v) {
   }
 
   // 3. 기초 RC (파일캡·매트, 토공사 완료 후 착수)
-  const t2_5_real = Math.max(1, ceil(v.층당모듈면적 * 0.032));
-  add(2.5, `기초 RC (파일캡·매트, 층당 ${v.층당모듈면적.toFixed(0)}m²)`,
+  const t2_5_real = Math.max(1, ceil(v.바닥면적 * 0.0328));
+  add(2.5, `기초 RC (파일캡·매트, 바닥 ${v.바닥면적.toFixed(0)}m²)`,
       t2_5_real, 0, task(2).end + 1, 'critical',
-      `광양 기가타운 101동 실적: 기초RC 15일 ÷ 층당 모듈 면적 476m² = 0.032일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${t2_5_real}일 (달력 기간 포함)`,
-      ['gwangyang_structure']);
+      `켄텍 대학원숙소 실적: 기초 C/D 23일 ÷ 1층 슬래브 701m² = 0.0328일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${t2_5_real}일 (달력 기간 포함)`,
+      ['kentech_core']);
 
   // 4. 지하층 골조 (지하층 있을 때만, 기초RC 완료 후 착수) — 광양 기가타운 면적 비례
   let afterFoundEnd = task(2.5).end;
@@ -1474,25 +1527,25 @@ function buildTasks(v) {
   }
 
   // 5. 1층·필로티 골조 (기초RC+지하층골조 완료 후 착수) — 광양 기가타운 면적 비례
-  const t3_real = Math.max(1, ceil(v.층당모듈면적 * 0.053));
-  const t3_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
+  const t3_real = Math.max(1, ceil(v.바닥면적 * 0.0414));
+  const t3_nw   = 0; // 켄텍 달력(C/D) 기반 — 비작업일 이미 포함
   add(3, '1층·필로티 골조', t3_real, t3_nw, afterFoundEnd + 1, 'critical',
-    `광양 기가타운 실적: 1층(5.0m) 25일 ÷ 층당 모듈 면적 476m² = 0.053일/m² × ${v.층당모듈면적.toFixed(0)}m² = ${t3_real}일 (달력 기간, 광양 비작업일 포함)`,
-    ['gwangyang_structure']);
+    `켄텍 대학원숙소 실적: 1층 C/D 29일 ÷ 1층 슬래브 701m² = 0.0414일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${t3_real}일 (달력 기간 포함)`,
+    ['kentech_core']);
   const afterPilotiEnd = s[s.length - 1].end;
 
-  // 4. 코어 골조 (1층·필로티 완료 후 착수)
-  const t4_real = 6 * v.총층수;
-  const t4_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
-  add(4, `코어 골조 (1~${v.총층수}층)`, t4_real, t4_nw, afterPilotiEnd + 1, 'critical',
-    `광양 기가타운 실적: 코어 3~12층 60일 ÷ 10층 = 6일/층 × ${v.총층수}층 (달력 기간, 광양 비작업일 포함)`,
-    ['gwangyang_structure']);
+  // 4. 코어 골조 (1층·필로티 완료 후 착수) — 코어병행형: 켄텍 거푸집면적 환산
+  const t4_real = v.코어총기간;
+  const t4_nw   = 0; // 켄텍 C/D(가동율 63.7%) 기반 — 비작업일 이미 포함
+  add(4, `코어 골조 (1~${v.총층수}층, ${v.코어층당일}일/층)`, t4_real, t4_nw, afterPilotiEnd + 1, 'critical',
+    `켄텍 대학원숙소 실적: 기준층 거푸집 696m² → C/D 9일 = 0.01293일/m² × 코어면적 ${v.코어골조면적}m² = ${v.코어층당일}일/층 × ${v.총층수}층 (달력 기간, 켄텍 가동율 63.7% 포함)`,
+    ['kentech_core']);
 
   // 5. 옥탑 골조
   const t5_real = 11;  // 광양 기가타운 실적: 옥상 골조 11일 (WBS 6.1.1.6.5)
   const t5_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
-  add(5, '옥탑 골조', t5_real, t5_nw, task(4).end + 1, 'normal',
-    '광양 기가타운 실적: 옥상 골조 11일 WBS 6.1.1.6.5 (달력 기간, 광양 비작업일 포함)',
+  add(5, '옥탑 골조 (코어 상부: 계단실·물탱크실)', t5_real, t5_nw, task(4).end + 1, 'normal',
+    '광양 기가타운 실적: 옥상 골조 11일 WBS 6.1.1.6.5 (달력 기간, 광양 비작업일 포함) / 모듈로만 짓는 경우 코어 최상부 구조물에 해당',
     ['gwangyang_structure']);
 
   // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행)
@@ -1501,7 +1554,9 @@ function buildTasks(v) {
     ['otkcrk_p135', 'otkcrk_p163'], true);
 
   // ── 7. 모듈 현장 조립 + 접합 작업 (층별 순차: 인양 → 수직접합(강봉) → 수평접합) ──
-  const cycleStart = max(task(4).end, task(6).end) + 1; // 코어골조 AND 베이스플레이트 완료 후
+  // 코어병행형: 코어 착수 후 '코어 선행 일수'만큼 지난 뒤 모듈 시작 → 코어와 병행 진행
+  // (베이스플레이트 완료 이후로도 보정 → 둘 중 늦은 날 착수)
+  const cycleStart = max(task(4).start + v.코어선행일, task(6).end + 1);
   const 층당설치일_최하 = v.층당설치일_최하층;
   const 층당설치일_기준 = v.층당설치일_기준층;
   const 최하층소요일 = 층당설치일_최하 + v.층당접합일;
@@ -1678,6 +1733,8 @@ function calc() {
     강봉기간:      +$('i_강봉기간').value      || 0,
     수평접합부:    +$('i_수평접합부').value    || 0,
     수평접합속도:  +$('i_수평접합속도').value  || 0,
+    코어골조면적:  +$('i_코어골조면적').value  || 0,
+    코어선행일:    +$('i_코어선행일').value    || 0,
     별표1:         Math.min(+$('i_별표1').value || 0, 364),
     별표2:         Math.min(+$('i_별표2').value || 0, 364),
   };
@@ -1709,14 +1766,21 @@ function calc() {
 
   // 토공사 기간 (광양 기가타운 실적 면적 비례: 155일 ÷ 476m² = 0.326일/m²)
   v.층당모듈면적 = moduleTypes.reduce(function(s,t){ return s + (t.w||0)*(t.l||0)*(t.n||0); }, 0) * v.층당세대;
-  v.토공사기간   = Math.max(1, Math.ceil(v.층당모듈면적 * 0.326));
+  // 건물 1층 바닥면적: 토공·기초·저층 골조 비례 기준 (0이면 층당 모듈 면적으로 대체)
+  v.바닥면적     = +$('i_바닥면적').value || v.층당모듈면적;
+  // 켄텍 실적(1층 슬래브 701m² 기준) 면적 비례: 토공 C/D 45일 ÷ 701 = 0.0642일/m²
+  v.토공사기간   = Math.max(1, Math.ceil(v.바닥면적 * 0.0642));
+
+  // 코어 골조 (코어병행형) — 켄텍 기준층 거푸집 696m² → C/D 9일 = 0.01293일/m² (달력 기간)
+  v.코어층당일  = Math.max(1, ceil(v.코어골조면적 * 9 / 696));
+  v.코어총기간  = v.코어층당일 * v.총층수;
 
   // 입력 섹션 표시 갱신
   $('r_총층수').textContent         = v.총층수;
   $('r_총세대').textContent         = v.총세대;
   $('r_총모듈').textContent         = v.총모듈;
   $('r_층당모듈면적').textContent   = v.층당모듈면적.toFixed(1);
-  v.기초RC기간 = Math.max(1, Math.ceil(v.층당모듈면적 * 0.032));
+  v.기초RC기간 = Math.max(1, Math.ceil(v.바닥면적 * 0.0328));
   $('r_토공사기간').textContent     = v.토공사기간;
   $('r_기초RC기간').textContent     = v.기초RC기간;
   const 지하골조_factor_disp = v.지하층수 === 0 ? 0
@@ -1729,6 +1793,8 @@ function calc() {
   const gDiv = $('g_지하골조');
   if (gDiv) gDiv.style.display = v.지하층수 > 0 ? '' : 'none';
 
+  $('r_코어층당일').textContent         = v.코어층당일;
+  $('r_코어총기간').textContent         = v.코어총기간;
   $('r_일일설치속도').textContent       = v.일일설치속도;
   $('r_최하층설치일').textContent       = v.층당설치일_최하층;
   $('r_기준층설치일').textContent       = v.층당설치일_기준층;
