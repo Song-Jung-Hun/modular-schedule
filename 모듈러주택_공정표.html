@@ -1062,6 +1062,32 @@
       </div>
 
     </div>
+      <!-- F. 경제성 (노무비 + 경비) -->
+      <div class="card">
+        <div class="card-header" style="background:#385723;">💰 F. 경제성 산출 (노무비 + 경비)</div>
+        <div class="card-body">
+          <div class="input-grid" style="margin-bottom:12px;">
+            <div class="input-group">
+              <label>경유 단가 (크레인 연료)</label>
+              <div class="input-row">
+                <input type="number" id="i_유가" value="1600" min="0" step="10" oninput="calc()">
+                <span class="unit">원/ℓ</span>
+              </div>
+              <span class="note-text">크레인 연료비 산정용 (현재 경유가)</span>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="schedule-table" id="econTable" style="font-size:12px;">
+              <thead><tr><th style="text-align:left">공종</th><th>노무비(원)</th><th>경비(원)</th><th>합계(원)</th></tr></thead>
+              <tbody id="econBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px; background:#EAF1E0; border-radius:6px; padding:10px 14px; font-size:11px; color:#385723;">
+            <span id="econNote"></span>
+          </div>
+        </div>
+      </div>
+
   </div>
 
   <!-- ── 탭2: 공기산정표 ── -->
@@ -1676,6 +1702,15 @@ const WAGE_2026 = {보통인부:172068, 특별인부:226122, 비계공:281939, �
 const CRANE_COST = {50:{son:88909,fuel:10.0}, 100:{son:159620,fuel:15.9}, 150:{son:257000,fuel:18.5}, 200:{son:308010,fuel:22.0}, 300:{son:612373,fuel:24.0}, 600:{son:1100000,fuel:30.0}};
 // ※150t·600t는 표에 직접값 없어 인접 톤수 보간/추정 / 펌프카·트럭은 추후 추가
 
+// ── 켄텍 실적 man-day 계수 (직종별 인·일, 면적/모듈당) ── 노무비 산출용
+// 기초·1층 = 바닥면적(m²)당 / 코어 = 코어면적(m²)·1개층당 / 모듈 = 모듈 1개당
+const MANDAY = {
+  기초: {철근공:0.10225, 보통인부:0.04171, 형틀목공:0.01312, 콘크리트공:0.02876, 특별인부:0.01438},
+  '1층': {철근공:0.03389, 보통인부:0.03538, 철골공:0.0294, 비계공:0.01161, 특별인부:0.02224, 형틀목공:0.09829, 용접공:0.00399, 콘크리트공:0.01327},
+  코어: {철근공:0.00397, 보통인부:0.00555, 철골공:0.02004, 비계공:0.0079, 특별인부:0.01167, 형틀목공:0.01767, 용접공:0.00273, 콘크리트공:0.00207},
+  모듈: {철근공:1.6, 보통인부:0.4}
+};
+
 // 지역 드롭다운을 가동율 데이터로 채움 (가나다순)
 function populateRegions() {
   const sel = $('i_지역');
@@ -1821,6 +1856,39 @@ function calc() {
   renderSchedule(tasks, totalDays, startDate);
   renderGantt(tasks, totalDays, v, startDate);
   renderMilestones(tasks, totalDays, startDate);
+  renderEconomics(v);
+}
+
+// ── 경제성(노무비+경비) 산출·렌더 ──────────────────────────────────────────
+// 노무비 = 켄텍 man-day 계수 × 물량 × 시중노임 / 경비 = 크레인 양중 시간 × (손료+연료+운전원)
+function renderEconomics(v) {
+  const 유가 = +$('i_유가').value || 1600;
+  const won = n => Math.round(n).toLocaleString();
+  // 공종별 물량: 기초·1층 = 바닥면적 / 코어 = 코어면적×총층수 / 모듈 = 총모듈수
+  const 물량 = { 기초: v.바닥면적, '1층': v.바닥면적, 코어: v.코어골조면적 * v.총층수, 모듈: v.총모듈 };
+  const 표시명 = { 기초:'기초 RC', '1층':'1층·필로티 골조', 코어:'코어 골조', 모듈:'모듈 설치+접합' };
+  const rows = []; let laborSum = 0;
+  for (const k of ['기초','1층','코어','모듈']) {
+    let cost = 0;
+    for (const j in MANDAY[k]) cost += MANDAY[k][j] * (물량[k] || 0) * (WAGE_2026[j] || 0);
+    rows.push({ name: 표시명[k], labor: cost, equip: 0 });
+    laborSum += cost;
+  }
+  // 경비: 이동식 크레인(모듈 양중) — 양중일 × 8hr × (손료 + 연료×유가) + 운전원 일당
+  const cr = CRANE_COST[v.크레인종류] || CRANE_COST[150];
+  const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
+  const 크레인경비 = v.크레인대수 * 양중일 * (8 * (cr.son + cr.fuel * 유가) + WAGE_2026.건설기계운전사);
+  const 모듈행 = rows.find(r => r.name === '모듈 설치+접합'); 모듈행.equip = 크레인경비;
+  const equipSum = 크레인경비;
+  const body = $('econBody');
+  if (body) {
+    body.innerHTML = rows.map(r =>
+      `<tr><td style="text-align:left">${r.name}</td><td class="num-col">${won(r.labor)}</td><td class="num-col">${r.equip ? won(r.equip) : '-'}</td><td class="num-col" style="font-weight:700">${won(r.labor + r.equip)}</td></tr>`
+    ).join('') +
+    `<tr class="total-row"><td style="text-align:left">합계</td><td class="num-col">${won(laborSum)}</td><td class="num-col">${won(equipSum)}</td><td class="num-col" style="font-weight:700">${won(laborSum + equipSum)}</td></tr>`;
+  }
+  const note = $('econNote');
+  if (note) note.innerHTML = `노무비 = 켄텍 실적 man-day × 물량 × 시중노임(2026.1.1) · 경비 = 크레인 ${v.크레인종류}t × ${양중일}일 양중(손료+연료@${유가}원/ℓ+운전원 ${v.크레인대수}대) · <b>토공·옥탑·지붕·마감·부대는 인부 자료 한계로 미반영</b>`;
 }
 
 // ── 공기산정표 렌더 ──────────────────────────────────────────────────────
