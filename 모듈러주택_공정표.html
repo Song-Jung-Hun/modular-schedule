@@ -752,7 +752,7 @@
                   <span class="calc-val" id="r_토공사기간">—</span>
                   <span class="unit">일</span>
                 </div>
-                <span class="note-text">= 바닥면적 × 0.0642일/m² (켄텍: 토공 45일 ÷ 1층 슬래브 701m² / ※ 지하 깊은 굴착 포함값)</span>
+                <span class="note-text">= 바닥면적 × 0.0414 작업일/m² ÷ 가동율 (켄텍: 토공 작업일 29일 ÷ 701m² / ※ 지하 깊은 굴착 포함)</span>
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
@@ -761,7 +761,7 @@
                   <span class="calc-val" id="r_기초RC기간">—</span>
                   <span class="unit">일</span>
                 </div>
-                <span class="note-text">= 바닥면적 × 0.0328일/m² (켄텍: 기초 23일 ÷ 1층 슬래브 701m²)</span>
+                <span class="note-text">= 바닥면적 × 0.0203 작업일/m² ÷ 가동율 (켄텍: 기초 작업일 14.24일 ÷ 701m²)</span>
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
@@ -789,7 +789,7 @@
             </div>
             <div style="margin-top:8px; background:#EEF4FF; border-radius:6px; padding:8px 12px; font-size:11px; color:#555;">
               <strong>켄텍 대학원숙소 비례 기준 (1층 슬래브 701m²):</strong> 바닥면적 입력 기준<br>
-              토공사(굴착+파일) 45일 = 0.0642일/m² · 기초RC 23일 = 0.0328일/m² · 1층·필로티 29일 = 0.0414일/m²<br>
+토공사 작업일 29일 = 0.0414일/m² · 기초RC 14.24일 = 0.0203일/m² · 1층·필로티 17.87일 = 0.0255일/m² (모두 ÷ 지역 가동율로 달력 환산)<br>
               <span style="color:#888;">※ 지하층 골조는 아직 광양 기준 유지 (B2F 0.090·B1F 0.097일/m², 층당 모듈 면적 기준)</span>
             </div>
           </div>
@@ -980,64 +980,31 @@
 
       <!-- D. 지역 비작업일 -->
       <div class="card">
-        <div class="card-header blue" style="background:#2E75B6;">📍 D. 지역 비작업일 기준 (LH 지침 별표)</div>
+        <div class="card-header blue" style="background:#2E75B6;">📍 D. 지역 가동율 (기상청 2021~2025)</div>
         <div class="card-body">
           <div class="input-grid">
             <div class="input-group" style="grid-column:1/-1">
-              <label>현장 지역 선택</label>
+              <label>현장 지역 선택 (기상청 2021~2025 가동율)</label>
               <div class="input-row">
-                <select id="i_지역" class="region-select" onchange="onRegionChange()">
-                  <optgroup label="수도권">
-                    <option value="170,158">서울</option>
-                    <option value="170,156">인천</option>
-                    <option value="170,163">수원 (경기남부)</option>
-                    <option value="189,175">파주 (경기북부)</option>
-                  </optgroup>
-                  <optgroup label="강원">
-                    <option value="185,176">춘천</option>
-                    <option value="188,177">원주</option>
-                    <option value="163,153">강릉</option>
-                  </optgroup>
-                  <optgroup label="충청">
-                    <option value="175,162">대전</option>
-                    <option value="177,167" selected>천안 (충남)</option>
-                    <option value="184,173">청주 (충북)</option>
-                    <option value="169,158">서산 (충남)</option>
-                  </optgroup>
-                  <optgroup label="경상">
-                    <option value="165,161">대구</option>
-                    <option value="174,150">부산</option>
-                    <option value="167,155">창원</option>
-                    <option value="159,153">울산</option>
-                  </optgroup>
-                  <optgroup label="전라">
-                    <option value="179,174">광주</option>
-                    <option value="176,174">전주</option>
-                  </optgroup>
-                  <optgroup label="제주">
-                    <option value="178,160">제주</option>
-                  </optgroup>
-                </select>
+                <select id="i_지역" class="region-select" onchange="onRegionChange()"></select>
               </div>
-              <span class="note-text">선택하면 별표1·2 자동 입력 / 직접 수정도 가능 | LH 지침 2021.9.17 기준 (10년 기상 데이터)</span>
+              <span class="note-text">선택하면 그 지역 가동율 자동 적용 | 기상청 ASOS 일자료 2021~2025: 강수≥10mm·신적설≥1cm·최저≤−10℃·순간풍속≥14m/s + 주말·공휴일</span>
             </div>
             <div class="input-group">
-              <label>기초공사 비작업일/년 [별표1]</label>
+              <label>가동율 (작업 가능일 비율)</label>
               <div class="input-row">
-                <input type="number" id="i_별표1" value="177" min="0" max="364" oninput="calc()">
-                <span class="unit">일/년</span>
+                <input type="number" id="i_가동율" value="58.0" min="20" max="100" step="0.1" oninput="onGadongInput()">
+                <span class="unit">%</span>
               </div>
-              <span class="note-text" id="note_별표1">LH 지침 별표1, 천안(충남) 기준</span>
-              <button class="ref-btn ref-btn-inline" onclick="openRef(['lh_p16','lh_p17'])">📄 별표1 원문 보기</button>
+              <span class="note-text" id="note_가동율">지역 선택 시 자동 입력 / 직접 수정 가능</span>
             </div>
             <div class="input-group">
-              <label>골조공사 비작업일/년 [별표2]</label>
+              <label>연간 비작업일 (자동)</label>
               <div class="input-row">
-                <input type="number" id="i_별표2" value="167" min="0" max="364" oninput="calc()">
+                <span class="calc-val" id="r_비작업일">153</span>
                 <span class="unit">일/년</span>
               </div>
-              <span class="note-text" id="note_별표2">LH 지침 별표2, 천안(충남) 기준</span>
-              <button class="ref-btn ref-btn-inline" onclick="openRef(['lh_p18','lh_p19'])">📄 별표2 원문 보기</button>
+              <span class="note-text">= 365 × (1 − 가동율) · 주말·공휴일·기상 통합</span>
             </div>
             <div class="input-group" style="grid-column:1/-1">
               <label>착공 예정일 <span style="font-weight:400;color:#999;font-size:11px">(공기산정표·바차트 날짜 표시)</span></label>
@@ -1056,7 +1023,7 @@
             </div>
           </div>
           <div style="margin-top:12px; background:#EEF4FF; border-radius:6px; padding:10px 12px; font-size:11px; color:#444;">
-            <strong>비작업일 계산:</strong> LH 지침 별표1/2 = 연간 총 비작업일 (일요일·토요일·공휴일·기상 통합, 주5일 기준) → 달력기간 = CEILING(실작업일 × 365 ÷ (365 − 별표)) | 예: 천안 별표2=167 → 실작업 1일 ≈ 1.84 달력일
+            <strong>달력 환산:</strong> 달력기간 = CEILING(실작업일 ÷ 가동율) | 가동율 = (365 − 연간 비작업일) ÷ 365 | 예: 천안 가동율 58% → 실작업 1일 ≈ 1.72 달력일 (기상청 ASOS 2021~2025 5년 실측)
           </div>
         </div>
       </div>
@@ -1485,28 +1452,22 @@ function buildTasks(v) {
   // 2. 토공사 (터파기+기초, 광양 기가타운 실적 면적 비례)
   add(2, `토공사 (굴착+파일, 바닥 ${v.바닥면적.toFixed(0)}m²)`,
       v.토공사기간, 0, task(1).end + 1, 'critical',
-      `켄텍 대학원숙소 실적: 토공사(굴착+파일) C/D 45일 ÷ 1층 슬래브 701m² = 0.0642일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${v.토공사기간}일 (달력 기간 포함 / ※ 켄텍은 지하2층 깊은 굴착 포함 — 지하 없으면 과다 가능)`,
+      `켄텍 실적: 토공 작업일 29일 ÷ 701m² = 0.0414일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.토공사기간}일 (※ 켄텍은 지하2층 깊은 굴착 포함 — 지하 없으면 과다 가능)`,
       ['kentech_core']);
 
-  // 달력 환산 헬퍼 ─ 실작업일 → 달력기간
-  // LH 지침 별표1/2 = 연간 총 비작업일 (주말·공휴·기상 통합)
-  // 달력기간 = ceil(실작업일 × 365 / (365 - 별표))
-  function cal1(r) {
+  // 달력 환산 헬퍼 ─ 실작업일 → 달력기간 (가동율 기반)
+  // 달력기간 = ceil(실작업일 / 가동율) | 가동율 = 기상청 ASOS 2021~2025 지역 실측
+  function calG(r) {
     if (r <= 0) return 0;
-    const w = Math.max(365 - v.별표1, 1);
-    return Math.max(r, ceil(r * 365 / w));
-  }
-  function cal2(r) {
-    if (r <= 0) return 0;
-    const w = Math.max(365 - v.별표2, 1);
-    return Math.max(r, ceil(r * 365 / w));
+    return Math.max(r, ceil(r / v.가동율));
   }
 
   // 3. 기초 RC (파일캡·매트, 토공사 완료 후 착수)
-  const t2_5_real = Math.max(1, ceil(v.바닥면적 * 0.0328));
+  const 기초작업일 = v.바닥면적 * 0.0203;        // 켄텍 기초 작업일 14.24일 ÷ 701m² = 0.0203일/m²
+  const t2_5_real = Math.max(1, calG(기초작업일)); // 달력 = ceil(작업일 ÷ 지역 가동율)
   add(2.5, `기초 RC (파일캡·매트, 바닥 ${v.바닥면적.toFixed(0)}m²)`,
       t2_5_real, 0, task(2).end + 1, 'critical',
-      `켄텍 대학원숙소 실적: 기초 C/D 23일 ÷ 1층 슬래브 701m² = 0.0328일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${t2_5_real}일 (달력 기간 포함)`,
+      `켄텍 실적: 기초 작업일 14.24일 ÷ 701m² = 0.0203일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${기초작업일.toFixed(1)}작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t2_5_real}일`,
       ['kentech_core']);
 
   // 4. 지하층 골조 (지하층 있을 때만, 기초RC 완료 후 착수) — 광양 기가타운 면적 비례
@@ -1525,10 +1486,11 @@ function buildTasks(v) {
   }
 
   // 5. 1층·필로티 골조 (기초RC+지하층골조 완료 후 착수) — 광양 기가타운 면적 비례
-  const t3_real = Math.max(1, ceil(v.바닥면적 * 0.0414));
-  const t3_nw   = 0; // 켄텍 달력(C/D) 기반 — 비작업일 이미 포함
+  const 일층작업일 = v.바닥면적 * 0.0255;        // 켄텍 1층 작업일 17.87일 ÷ 701m² = 0.0255일/m²
+  const t3_real = Math.max(1, calG(일층작업일));
+  const t3_nw   = 0;
   add(3, '1층·필로티 골조', t3_real, t3_nw, afterFoundEnd + 1, 'critical',
-    `켄텍 대학원숙소 실적: 1층 C/D 29일 ÷ 1층 슬래브 701m² = 0.0414일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${t3_real}일 (달력 기간 포함)`,
+    `켄텍 실적: 1층 작업일 17.87일 ÷ 701m² = 0.0255일/m² × 바닥 ${v.바닥면적.toFixed(0)}m² = ${일층작업일.toFixed(1)}작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t3_real}일`,
     ['kentech_core']);
   const afterPilotiEnd = s[s.length - 1].end;
 
@@ -1536,7 +1498,7 @@ function buildTasks(v) {
   const t4_real = v.코어총기간;
   const t4_nw   = 0; // 켄텍 C/D(가동율 63.7%) 기반 — 비작업일 이미 포함
   add(4, `코어 골조 (1~${v.총층수}층, ${v.코어층당일}일/층)`, t4_real, t4_nw, afterPilotiEnd + 1, 'critical',
-    `켄텍 대학원숙소 실적: 기준층 거푸집 696m² → C/D 9일 = 0.01293일/m² × 코어면적 ${v.코어골조면적}m² = ${v.코어층당일}일/층 × ${v.총층수}층 (달력 기간, 켄텍 가동율 63.7% 포함)`,
+    `켄텍 실적: 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² × 코어면적 ${v.코어골조면적}m² ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.코어층당일}일/층 × ${v.총층수}층`,
     ['kentech_core']);
 
   // 5. 옥탑 골조
@@ -1561,8 +1523,8 @@ function buildTasks(v) {
   const 기준층소요일 = 층당설치일_기준 + v.층당접합일;
   const 총조립기간 = v.총조립기간;
 
-  // ── 별표2 기반 달력 환산: 총실작업일에 cal2 1회 적용 → 층별 비례 분배 (ceiling 누적 방지) ──
-  const 달_총조립기간 = 총조립기간 > 0 ? cal2(총조립기간) : 0;
+  // ── 가동율 기반 달력 환산: 총실작업일에 calG 1회 적용 → 층별 비례 분배 (ceiling 누적 방지) ──
+  const 달_총조립기간 = 총조립기간 > 0 ? calG(총조립기간) : 0;
   const 달_비율 = 총조립기간 > 0 ? 달_총조립기간 / 총조립기간 : 1;
   const 달_최하층소요일 = 최하층소요일 > 0 ? Math.max(1, Math.round(최하층소요일 * 달_비율)) : 0;
   const 달_기준층소요일 = 기준층소요일 > 0 ? Math.max(1, Math.round(기준층소요일 * 달_비율)) : 0;
@@ -1704,16 +1666,30 @@ function updateModuleTotals() {
 
 // ── 이벤트 핸들러 ────────────────────────────────────────────────────────
 
+// ── 지역별 가동율 (기상청 ASOS 일자료 2021~2025, 강수≥10mm·신적설≥1cm·최저≤-10℃·순간풍속≥14m/s + 주말·공휴일 기준) ──
+const REGION_GADONG = {"강릉": 56.2, "강진군": 58.1, "강화": 56.5, "거제": 59.5, "거창": 57.6, "경주시": 54.7, "고산": 37.7, "고창": 55.4, "고창군": 59.5, "고흥": 58.7, "광양시": 58.4, "광주": 58.5, "구미": 60.9, "군산": 57.4, "금산": 58.2, "김해시": 59.0, "남원": 57.8, "남해": 59.2, "대관령": 39.4, "대구": 59.3, "대전": 58.4, "동두천": 55.2, "동해": 56.8, "목포": 52.7, "문경": 56.3, "밀양": 61.1, "백령도": 46.9, "보령": 59.8, "보성군": 54.7, "보은": 57.0, "봉화": 56.4, "부산": 50.8, "부안": 59.6, "부여": 59.1, "북강릉": 57.4, "북부산": 60.1, "북창원": 59.9, "북춘천": 53.3, "산청": 53.6, "상주": 57.7, "서귀포": 58.6, "서산": 58.4, "서울": 57.5, "서청주": 57.9, "성산": 53.3, "세종": 59.5, "속초": 54.1, "수원": 57.4, "순창군": 55.6, "순천": 53.5, "안동": 57.3, "양산시": 58.8, "양평": 57.1, "여수": 44.1, "영광군": 58.6, "영덕": 51.5, "영월": 55.8, "영주": 50.8, "영천": 58.1, "완도": 56.3, "울릉도": 33.5, "울산": 60.0, "울진": 57.5, "원주": 58.5, "의령군": 56.6, "의성": 56.0, "이천": 56.3, "인제": 53.5, "인천": 56.5, "임실": 58.0, "장수": 55.2, "장흥": 59.3, "전주": 59.0, "정선군": 51.0, "정읍": 58.4, "제주": 50.5, "제천": 53.7, "진도군": 55.7, "진주": 59.7, "창원": 60.2, "천안": 58.0, "철원": 53.1, "청송군": 53.6, "청주": 59.1, "추풍령": 51.9, "춘천": 55.3, "충주": 55.9, "태백": 53.7, "통영": 57.9, "파주": 53.8, "포항": 59.3, "함양군": 57.8, "합천": 60.4, "해남": 56.9, "홍성": 57.2, "홍천": 55.3, "흑산도": 40.1};
+
+// 지역 드롭다운을 가동율 데이터로 채움 (가나다순)
+function populateRegions() {
+  const sel = $('i_지역');
+  if (!sel) return;
+  const names = Object.keys(REGION_GADONG).sort((a,b)=>a.localeCompare(b,'ko'));
+  sel.innerHTML = names.map(n => `<option value="${n}"${n==='천안'?' selected':''}>${n} (${REGION_GADONG[n]}%)</option>`).join('');
+}
+
 function onRegionChange() {
   const sel = $('i_지역');
-  if (!sel.value) return;
-  const [b1, b2] = sel.value.split(',');
-  $('i_별표1').value = b1;
-  $('i_별표2').value = b2;
-  const regionName = sel.options[sel.selectedIndex].text;
-  $('note_별표1').textContent = `LH 지침 별표1, ${regionName} 기준`;
-  $('note_별표2').textContent = `LH 지침 별표2, ${regionName} 기준`;
-  $('region-badge').textContent = `📍 ${regionName} 기준`;
+  const name = sel.value;
+  if (!name || !REGION_GADONG[name]) return;
+  $('i_가동율').value = REGION_GADONG[name];
+  $('note_가동율').textContent = `${name} 기준 (기상청 2021~2025)`;
+  const badge = $('region-badge'); if (badge) badge.textContent = `📍 ${name} 기준`;
+  calc();
+}
+
+// 가동율 직접 수정 시
+function onGadongInput() {
+  $('note_가동율').textContent = '직접 입력값';
   calc();
 }
 
@@ -1733,9 +1709,10 @@ function calc() {
     수평접합속도:  +$('i_수평접합속도').value  || 0,
     코어골조면적:  +$('i_코어골조면적').value  || 0,
     코어선행일:    +$('i_코어선행일').value    || 0,
-    별표1:         Math.min(+$('i_별표1').value || 0, 364),
-    별표2:         Math.min(+$('i_별표2').value || 0, 364),
+    가동율:        Math.min(Math.max(+$('i_가동율').value || 58, 20), 100) / 100,  // 기상청 2021~2025 지역 가동율(0~1)
   };
+  // 연간 비작업일 표시 = 365 × (1 − 가동율)
+  { const el = $('r_비작업일'); if (el) el.textContent = Math.round(365 * (1 - v.가동율)); }
   // 강봉 연결 방식 — 구조전용층 없음
   v.총층수        = v.세대층;
   v.총세대        = v.세대층 * v.층당세대;
@@ -1766,11 +1743,11 @@ function calc() {
   v.층당모듈면적 = moduleTypes.reduce(function(s,t){ return s + (t.w||0)*(t.l||0)*(t.n||0); }, 0) * v.층당세대;
   // 건물 1층 바닥면적: 토공·기초·저층 골조 비례 기준 (0이면 층당 모듈 면적으로 대체)
   v.바닥면적     = +$('i_바닥면적').value || v.층당모듈면적;
-  // 켄텍 실적(1층 슬래브 701m² 기준) 면적 비례: 토공 C/D 45일 ÷ 701 = 0.0642일/m²
-  v.토공사기간   = Math.max(1, Math.ceil(v.바닥면적 * 0.0642));
+  // 켄텍 토공 작업일 29일 ÷ 701m² = 0.0414일/m² → 달력 = 작업일 ÷ 지역 가동율
+  v.토공사기간   = Math.max(1, Math.ceil(v.바닥면적 * 0.0414 / v.가동율));
 
-  // 코어 골조 (코어병행형) — 켄텍 기준층 거푸집 696m² → C/D 9일 = 0.01293일/m² (달력 기간)
-  v.코어층당일  = Math.max(1, ceil(v.코어골조면적 * 9 / 696));
+  // 코어 골조 (코어병행형) — 켄텍 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² ÷ 가동율
+  v.코어층당일  = Math.max(1, ceil(v.코어골조면적 * 0.00809 / v.가동율));
   v.코어총기간  = v.코어층당일 * v.총층수;
 
   // 입력 섹션 표시 갱신
@@ -1778,7 +1755,7 @@ function calc() {
   $('r_총세대').textContent         = v.총세대;
   $('r_총모듈').textContent         = v.총모듈;
   $('r_층당모듈면적').textContent   = v.층당모듈면적.toFixed(1);
-  v.기초RC기간 = Math.max(1, Math.ceil(v.바닥면적 * 0.0328));
+  v.기초RC기간 = Math.max(1, Math.ceil(v.바닥면적 * 0.0203 / v.가동율));
   $('r_토공사기간').textContent     = v.토공사기간;
   $('r_기초RC기간').textContent     = v.기초RC기간;
   const 지하골조_factor_disp = v.지하층수 === 0 ? 0
@@ -2109,6 +2086,7 @@ function switchTab(id) {
 }
 
 // ── 초기 실행 ────────────────────────────────────────────────────────────
+populateRegions();   // 지역 드롭다운을 가동율 데이터로 채움 (천안 기본 선택)
 renderModuleTable(); // 모듈 타입 테이블 먼저 렌더 → 내부에서 calc() 호출
 </script>
 </body>
