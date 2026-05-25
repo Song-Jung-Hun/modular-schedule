@@ -844,12 +844,13 @@
               <label>크레인 종류 (양중 용량 기준)</label>
               <div class="input-row">
                 <select id="i_크레인종류" onchange="calc()">
-                  <option value="50">50t 이동식</option>
-                  <option value="100">100t 이동식</option>
-                  <option value="150" selected>150t 이동식</option>
-                  <option value="200">200t 이동식</option>
-                  <option value="300">300t 이동식</option>
-                  <option value="600">600t 이동식 (대형 현장)</option>
+                  <option value="50">50t 이동식(타이어)</option>
+                  <option value="100">100t 이동식(타이어)</option>
+                  <option value="130" selected>130t 이동식(타이어)</option>
+                  <option value="160">160t 이동식(타이어)</option>
+                  <option value="200">200t 이동식(타이어)</option>
+                  <option value="250">250t 이동식(타이어)</option>
+                  <option value="300">300t 이동식(타이어)</option>
                 </select>
               </div>
               <span class="note-text">모듈 중량에 맞는 크레인 선택 / 양중 적합성 자동 검토용</span>
@@ -1702,8 +1703,8 @@ const REGION_GADONG = {"강릉": 56.2, "강진군": 58.1, "강화": 56.5, "거�
 const WAGE_2026 = {보통인부:172068, 특별인부:226122, 비계공:281939, 형틀목공:275790, 철근공:268187, 철공:239808, 철골공:252641, 용접공:282536, 콘크리트공:273540, 건설기계운전사:283297, 판넬조립공:243121, 방수공:228286};
 
 // ── 이동식(타이어) 크레인 시간당 기계손료 (기계경비산출표 2025, 톤→{손료 원/hr, 연료 ℓ/hr}) ── 경제성(경비) 산출용
-const CRANE_COST = {50:{son:88909,fuel:10.0}, 100:{son:159620,fuel:15.9}, 150:{son:257000,fuel:18.5}, 200:{son:308010,fuel:22.0}, 300:{son:612373,fuel:24.0}, 600:{son:1100000,fuel:30.0}};
-// ※150t·600t는 표에 직접값 없어 인접 톤수 보간/추정 / 펌프카·트럭은 추후 추가
+const CRANE_COST = {50:{son:88909,fuel:10.0}, 100:{son:159620,fuel:15.9}, 130:{son:219868,fuel:17.7}, 160:{son:294285,fuel:19.6}, 200:{son:308010,fuel:22.0}, 250:{son:443965,fuel:24.0}, 300:{son:612373,fuel:24.0}};
+// 전부 기계경비산출표 2025 이동식 타이어크레인(2104) 실제 시간당 손료·연료 (추정값 없음)
 
 // ── 켄텍 실적 man-day 계수 (직종별 인·일, 면적/모듈당) ── 노무비 산출용
 // 기초·1층 = 바닥면적(m²)당 / 코어 = 코어면적(m²)·1개층당 / 모듈 = 모듈 1개당
@@ -1745,7 +1746,7 @@ function calc() {
     층당세대:    +$('i_층당세대').value    || 0,
     세대당모듈:  moduleTypes.reduce(function(s,t){ return s+(t.n||0); }, 0),
     모듈중량:    Math.max.apply(null, moduleTypes.map(function(t){ return t.wt||0; })),
-    크레인종류:  +$('i_크레인종류').value  || 150,
+    크레인종류:  +$('i_크레인종류').value  || 130,
     크레인대수:  +$('i_크레인대수').value  || 1,
     최하층속도:  +$('i_최하층속도').value  || 4,
     기준층속도:  +$('i_기준층속도').value  || 6,
@@ -1884,7 +1885,7 @@ function renderEconomics(v) {
     laborSum += cost;
   }
   // 경비: 이동식 크레인(모듈 양중) — 양중일 × 8hr × (손료 + 연료×유가) + 운전원 일당
-  const cr = CRANE_COST[v.크레인종류] || CRANE_COST[150];
+  const cr = CRANE_COST[v.크레인종류] || CRANE_COST[130];
   const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
   const 크레인경비 = v.크레인대수 * 양중일 * (8 * (cr.son + cr.fuel * 유가) + WAGE_2026.건설기계운전사);
   const 모듈행 = rows.find(r => r.name === '모듈 설치+접합'); 모듈행.equip = 크레인경비;
