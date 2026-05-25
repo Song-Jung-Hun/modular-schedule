@@ -806,12 +806,12 @@
             </div>
             <div class="input-grid">
               <div class="input-group">
-                <label>코어 골조 면적 (거푸집 기준)</label>
+                <label>코어 바닥면적 (한 층)</label>
                 <div class="input-row">
-                  <input type="number" id="i_코어골조면적" value="696" min="0" oninput="calc()">
+                  <input type="number" id="i_코어바닥면적" value="475" min="0" oninput="calc()">
                   <span class="unit">m²/층</span>
                 </div>
-                <span class="note-text">★ 켄텍 기준층 거푸집 696m² → C/D 9일. 같은 인부조에 면적만 바꿔 공기 산출</span>
+                <span class="note-text">코어(계단실·EV) 한 층 바닥면적. 켄텍 기준층 데크 475m² → 거푸집 696m²(×1.465 자동 환산)</span>
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
@@ -824,7 +824,7 @@
                   <span class="calc-val" id="r_코어총기간">—</span>
                   <span class="unit">일 (총 코어)</span>
                 </div>
-                <span class="note-text">= CEILING(코어면적 × 9÷696) × 총층수 (달력 기간, 켄텍 가동율 63.7% 포함)</span>
+                <span class="note-text">= CEILING(바닥×1.465(거푸집) × 0.00809작업일/m² ÷ 가동율) × 총층수</span>
               </div>
               <div class="input-group">
                 <label>코어 선행 일수 (모듈 착수 오프셋)</label>
@@ -1754,7 +1754,7 @@ function calc() {
     수직접합속도:   +$('i_수직접합속도').value   || 0,
     수평접합부:    +$('i_수평접합부').value    || 0,
     수평접합속도:  +$('i_수평접합속도').value  || 0,
-    코어골조면적:  +$('i_코어골조면적').value  || 0,
+    코어바닥면적:  +$('i_코어바닥면적').value  || 0,
     코어선행일:    +$('i_코어선행일').value    || 0,
     가동율:        Math.min(Math.max(+$('i_가동율').value || 58, 20), 100) / 100,  // 기상청 2021~2025 지역 가동율(0~1)
   };
@@ -1793,7 +1793,9 @@ function calc() {
   // 켄텍 토공 작업일 29일 ÷ 701m² = 0.0414일/m² → 달력 = 작업일 ÷ 지역 가동율
   v.토공사기간   = Math.max(1, Math.ceil(v.바닥면적 * 0.0414 / v.가동율));
 
-  // 코어 골조 (코어병행형) — 켄텍 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² ÷ 가동율
+  // 코어 골조 (코어병행형) — 입력은 바닥면적, 켄텍 실측 거푸집÷데크 = 696÷475 = 1.465배로 거푸집 환산
+  v.코어골조면적 = v.코어바닥면적 * 1.4653;   // 바닥 → 거푸집 (켄텍 기준)
+  // 거푸집 면적 × 0.00809작업일/m²(켄텍 696→5.63작업일) ÷ 가동율
   v.코어층당일  = Math.max(1, ceil(v.코어골조면적 * 0.00809 / v.가동율));
   v.코어총기간  = v.코어층당일 * v.총층수;
 
