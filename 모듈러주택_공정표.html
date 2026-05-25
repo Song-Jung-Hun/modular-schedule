@@ -906,12 +906,20 @@
             </div>
             <div class="input-grid">
               <div class="input-group">
-                <label>수직접합 (강봉) 소요 기간</label>
+                <label>모듈당 수직접합 수</label>
                 <div class="input-row">
-                  <input type="number" id="i_강봉기간" value="0.1" min="0" step="0.01" oninput="calc()">
-                  <span class="unit">일/모듈</span>
+                  <input type="number" id="i_모듈당수직접합" value="4" min="0" step="1" oninput="calc()">
+                  <span class="unit">개/모듈</span>
                 </div>
-                <span class="note-text">★ OTKCRK 표5-11: 볼트체결(본조립) 2일/20모듈 = <b>0.10일/모듈</b> (천안두정 실적) — 수직접합 기준</span>
+                <span class="note-text">모듈 꼭지점 기둥 = <b>4개/모듈</b> (기본) · 수직접합 총수 = 모듈수 × 이 값</span>
+              </div>
+              <div class="input-group">
+                <label>수직접합 1개당 소요일</label>
+                <div class="input-row">
+                  <input type="number" id="i_수직접합속도" value="0.025" min="0" step="0.005" oninput="calc()">
+                  <span class="unit">일/접합</span>
+                </div>
+                <span class="note-text">★ OTKCRK 볼트체결 2일/20모듈 ÷ 4개 = <b>0.025일/접합</b> (4개×0.025 = 0.1일/모듈)</span>
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
@@ -920,7 +928,7 @@
                   <span class="calc-val" id="r_층당강봉일">1</span>
                   <span class="unit">일/층</span>
                 </div>
-                <span class="note-text">= CEILING(수직접합 × 층당 모듈 수)</span>
+                <span class="note-text">= CEILING(층당모듈 × 모듈당수직접합 × 개당소요일)</span>
               </div>
               <div class="input-group">
                 <label>수평접합부 수</label>
@@ -1599,7 +1607,7 @@ function buildTasks(v) {
   add(7,
       `모듈 현장 조립 + 접합 작업 (${v.세대층}층, 크레인 ${v.크레인대수}대)`,
       총조립기간, 조립_nw, cycleStart, 'critical',
-      `OTKCRK p.163 표5-11: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 수직접합(강봉) ${v.층당강봉일}일/층 (${v.강봉기간}일/모듈 × ${v.층당세대 * v.세대당모듈}모듈/층)${v.층당수평접합일 > 0 ? ` + 수평접합 ${v.층당수평접합일}일/층 (${v.수평접합부}접합부÷${v.세대층}층×${v.수평접합속도}일)` : ''} × ${v.세대층}층 / 별표2·주말·공휴 반영`,
+      `OTKCRK p.163 표5-11: 최하층 ${층당설치일_최하}일/층, 기준층 ${층당설치일_기준}일/층 (크레인 ${v.크레인대수}대) + 수직접합 ${v.층당강봉일}일/층 (${v.층당세대 * v.세대당모듈}모듈×${v.모듈당수직접합}개×${v.수직접합속도}일)${v.층당수평접합일 > 0 ? ` + 수평접합 ${v.층당수평접합일}일/층 (${v.수평접합부}접합부÷${v.세대층}층×${v.수평접합속도}일)` : ''} × ${v.세대층}층 / 가동율 반영`,
       ['otkcrk_p163', 'otkcrk_p8']);
   // 간트 세그먼트 데이터 첨부
   s[s.length - 1].modBars  = _modBars;
@@ -1750,7 +1758,8 @@ function calc() {
     크레인대수:  +$('i_크레인대수').value  || 1,
     최하층속도:  +$('i_최하층속도').value  || 4,
     기준층속도:  +$('i_기준층속도').value  || 6,
-    강봉기간:      +$('i_강봉기간').value      || 0,
+    모듈당수직접합: +$('i_모듈당수직접합').value || 0,
+    수직접합속도:   +$('i_수직접합속도').value   || 0,
     수평접합부:    +$('i_수평접합부').value    || 0,
     수평접합속도:  +$('i_수평접합속도').value  || 0,
     코어골조면적:  +$('i_코어골조면적').value  || 0,
@@ -1768,7 +1777,9 @@ function calc() {
   v.층당설치일_최하층 = ceil(층당모듈수 / Math.max(v.크레인대수 * v.최하층속도, 1));
   v.층당설치일_기준층 = ceil(층당모듈수 / Math.max(v.일일설치속도, 1));
   v.층당설치일    = v.층당설치일_기준층;            // 하위호환용
-  v.층당강봉일    = v.강봉기간 > 0 ? Math.max(1, ceil(층당모듈수 * v.강봉기간)) : 0;
+  // 수직접합: 층당 수직접합 수 = 층당모듈수 × 모듈당 접합수(꼭지점 기둥 4개) → × 개당 소요일
+  v.층당수직접합수 = 층당모듈수 * v.모듈당수직접합;
+  v.층당강봉일    = (v.수직접합속도 > 0 && v.모듈당수직접합 > 0) ? Math.max(1, ceil(v.층당수직접합수 * v.수직접합속도)) : 0;
   // 수평접합: 배치 기반 직접 입력, 층별 순차 (수직접합 직후 진행)
   v.층당수평접합일 = v.세대층 > 0 && v.수평접합부 > 0 && v.수평접합속도 > 0
     ? Math.max(1, ceil(v.수평접합부 / v.세대층 * v.수평접합속도))
@@ -2005,7 +2016,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
         ganttRows.push({
           noText:  '↳',
           noClass: 'orange',
-          label:   `접합 작업 (층당 ${v.층당강봉일}일, ${v.강봉기간}일/모듈)`,
+          label:   `접합 작업 (수직 ${v.층당강봉일}+수평 ${v.층당수평접합일}일/층, 수직 ${v.모듈당수직접합}개/모듈)`,
           bars:    t.boltBars,
           parallel: false
         });
