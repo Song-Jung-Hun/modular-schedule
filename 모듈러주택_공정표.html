@@ -116,6 +116,10 @@
     border: 1px solid #C5D8F0;
   }
   .note-text { font-size: 10px; color: #888; margin-top: 2px; }
+  /* 설명 글씨는 기본 숨김 → 상단 '설명 보기' 버튼으로 토글 */
+  body:not(.show-notes) .note-text { display: none; }
+  .note-toggle-btn { margin-left:auto; padding:6px 14px; border:1px solid var(--primary,#385723); background:#fff; color:var(--primary,#385723); border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; }
+  body.show-notes .note-toggle-btn { background:var(--primary,#385723); color:#fff; }
   .warn-text { font-size: 10px; color: #C00000; margin-top: 2px; font-weight: 600; }
 
   /* ── 모듈 타입 테이블 ── */
@@ -639,6 +643,7 @@
     <button class="tab-btn active" onclick="switchTab('inputs')">📋 변수 입력</button>
     <button class="tab-btn" onclick="switchTab('schedule')">📊 공기 산정표</button>
     <button class="tab-btn" onclick="switchTab('gantt')">📅 바차트 (간트)</button>
+    <button class="note-toggle-btn" id="noteToggleBtn" onclick="toggleNotes()">💡 설명 보기</button>
   </div>
 
   <!-- ── 탭1: 변수입력 ── -->
@@ -2182,6 +2187,13 @@ function moveTooltip(e) {
 function hideTooltip() { $('tooltip').style.display = 'none'; }
 
 // ── 탭 전환 ─────────────────────────────────────────────────────────────
+// 설명(note-text) 보기/숨기기 토글
+function toggleNotes() {
+  const on = document.body.classList.toggle('show-notes');
+  const btn = document.getElementById('noteToggleBtn');
+  if (btn) btn.textContent = on ? '🔅 설명 숨기기' : '💡 설명 보기';
+}
+
 function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
     const ids = ['inputs','schedule','gantt'];
