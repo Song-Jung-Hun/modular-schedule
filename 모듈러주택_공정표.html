@@ -1861,12 +1861,12 @@ function calc() {
   renderSchedule(tasks, totalDays, startDate);
   renderGantt(tasks, totalDays, v, startDate);
   renderMilestones(tasks, totalDays, startDate);
-  renderEconomics(v);
+  renderEconomics(v, tasks);
 }
 
 // ── 경제성(노무비+경비) 산출·렌더 ──────────────────────────────────────────
 // 노무비 = 켄텍 man-day 계수 × 물량 × 시중노임 / 경비 = 크레인 양중 시간 × (손료+연료+운전원)
-function renderEconomics(v) {
+function renderEconomics(v, tasks) {
   const 유가 = +$('i_유가').value || 1600;
   const won = n => Math.round(n).toLocaleString();
   // 공종별 물량: 기초·1층 = 바닥면적 / 코어 = 코어면적×총층수 / 모듈 = 총모듈수
@@ -1879,9 +1879,11 @@ function renderEconomics(v) {
   rows.push({ name: '토공사 (굴착)', labor: 0, equip: 토공경비 });
   equipSum += 토공경비;
   // 골조 노무비 (켄텍 man-day × 물량 × 시중노임)
+  let 코어노무 = 0;
   for (const k of ['기초','1층','코어']) {
     let cost = 0;
     for (const j in MANDAY[k]) cost += MANDAY[k][j] * (물량[k] || 0) * (WAGE_2026[j] || 0);
+    if (k === '코어') 코어노무 = cost;
     rows.push({ name: 표시명[k], labor: cost, equip: 0 });
     laborSum += cost;
   }
@@ -1897,6 +1899,14 @@ function renderEconomics(v) {
   const 모듈노무 = 모듈baseline * (2/3 + (1/3) * 접합배수);
   rows.push({ name: 표시명.모듈, labor: 모듈노무, equip: 0 });
   laborSum += 모듈노무;
+  // ── 빈 공종 노무비 = 인원 × 공종 작업일(실작업, 우리 규모 비례) × 직종 일당 ──
+  const dur = nm => { const t = tasks.find(x => x.name.startsWith(nm)); return t ? t.real : 0; };
+  const add노무 = (name, cost) => { rows.push({ name, labor: cost, equip: 0 }); laborSum += cost; };
+  add노무('옥탑(코어 상부)', v.총층수 > 0 ? 코어노무 / v.총층수 : 0);   // 켄텍 코어 1개 층분
+  add노무('베이스플레이트', 8 * dur('베이스플레이트') * WAGE_2026.특별인부);  // OTKCRK 8명
+  add노무('지붕 트러스', 6 * dur('지붕 트러스') * WAGE_2026.철골공);          // OTKCRK 6명
+  add노무('지붕 패널', 6 * dur('지붕 패널') * WAGE_2026.판넬조립공);          // OTKCRK 6명
+  add노무('방수시트', 2 * dur('방수시트') * WAGE_2026.방수공);               // OTKCRK 2명
   // 경비: 이동식 크레인(모듈 양중) — 양중일 × 8hr × (손료 + 연료×유가) + 운전원 일당
   const cr = CRANE_COST[v.크레인종류] || CRANE_COST[130];
   const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
@@ -1911,7 +1921,7 @@ function renderEconomics(v) {
     `<tr class="total-row"><td style="text-align:left">합계</td><td class="num-col">${won(laborSum)}</td><td class="num-col">${won(equipSum)}</td><td class="num-col" style="font-weight:700">${won(laborSum + equipSum)}</td></tr>`;
   }
   const note = $('econNote');
-  if (note) note.innerHTML = `노무비 = 켄텍 실적 man-day × 물량 × 시중노임(2026.1.1) · 경비 = 토공(굴착기 0.6㎥) + 크레인 ${v.크레인종류}t×${양중일}일 양중(손료+연료@${유가}원/ℓ+운전원 ${v.크레인대수}대) · <b>옥탑·베이스·지붕·마감·부대는 인부 자료 한계로 노무비 미반영</b>`;
+  if (note) note.innerHTML = `노무비 = (켄텍 man-day·OTKCRK 인원) × 작업일 × 시중노임(2026.1.1) — 우리 규모에 비례 · 경비 = 토공(굴착기) + 크레인 ${v.크레인종류}t×${양중일}일 · 옥탑=켄텍 코어 1층분, 지붕·베이스=OTKCRK 인원 · <b>마감·부대는 LH 자료로 추후 반영</b>`;
 }
 
 // ── 공기산정표 렌더 ──────────────────────────────────────────────────────
