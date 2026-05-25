@@ -1577,25 +1577,20 @@ function buildTasks(v) {
     : 달_기준층소요일;
   const 달_최하접합일 = 달_최하층소요일 - 달_최하설치일;
   const 달_기준접합일 = 달_기준층소요일 - 달_기준설치일;
-  const 조립_nw = 달_총조립기간 - 총조립기간;
-
-  const lastAssemblyEnd = 달_총조립기간 > 0 ? cycleStart + 달_총조립기간 - 1 : cycleStart;
-
-  // ── 크리티컬 패스 동적 판정 (코어//모듈 병행) ──
-  // 지붕 트러스 = max(모듈 완료, 옥탑 완료) 후 착수 → 늦게 끝나 후행을 gate하는 쪽만 CP, 빠른 쪽은 여유(비CP)
-  const 모듈CP = lastAssemblyEnd >= task(5).end;   // 모듈이 옥탑보다 늦게 끝나면 모듈이 CP
-  s.find(t => t.no === 5).type = (task(5).end >= lastAssemblyEnd) ? 'critical' : 'normal';  // 옥탑
-
-  // 간트 바차트용 층별 세그먼트 배열 (달력 기간 기준)
+  // ── 코어 게이팅: 각 층 모듈은 그 층 코어 완료 후에 설치 ──
+  // 코어(층당 ${코어층당}일)가 모듈 설치(층당 3일 안팎)보다 느리므로, 모듈은 코어 진행에 끌려감(추월 불가)
+  const 코어start = task(4).start;
+  const 코어층당 = Math.max(v.코어층당일, 1);
   const _modBars  = [];
   const _boltBars = [];
-  let fOffset = 0;
+  let prevEnd = cycleStart - 1;   // 직전 층 모듈 완료일
   for (let f = 0; f < v.세대층; f++) {
     const 달_설치일 = f === 0 ? 달_최하설치일 : 달_기준설치일;
     const 달_접합일 = f === 0 ? 달_최하접합일 : 달_기준접합일;
     const 달_층소요일 = f === 0 ? 달_최하층소요일 : 달_기준층소요일;
-    const fStart = cycleStart + fOffset;
-    _modBars.push({ start: fStart, total: 달_설치일, type: 모듈CP ? 'critical' : 'normal',
+    const 코어층완료 = 코어start + (f + 1) * 코어층당 - 1;   // (f+1)층 코어 완료일
+    const fStart = Math.max(코어층완료 + 1, prevEnd + 1);     // 그 층 코어 완료 후 & 직전 층 모듈 후
+    _modBars.push({ start: fStart, total: 달_설치일, type: 'critical',
                     name: `${f+1}층 모듈 조립 (${달_설치일}일)` });
     if (v.층당접합일 > 0) {
       const 접합라벨 = v.층당수평접합일 > 0
@@ -1604,8 +1599,17 @@ function buildTasks(v) {
       _boltBars.push({ start: fStart + 달_설치일, total: Math.max(1, 달_접합일), type: 'orange',
                        name: 접합라벨 });
     }
-    fOffset += 달_층소요일;
+    prevEnd = fStart + 달_층소요일 - 1;
   }
+  const lastAssemblyEnd = v.세대층 > 0 ? prevEnd : cycleStart;
+
+  // ── 크리티컬 패스 동적 판정 (코어 vs 모듈) ──
+  const 모듈CP = lastAssemblyEnd >= task(5).end;   // 모듈이 옥탑보다 늦게 끝나면 모듈이 CP
+  s.find(t => t.no === 5).type = (task(5).end >= lastAssemblyEnd) ? 'critical' : 'normal';  // 옥탑
+  _modBars.forEach(b => { b.type = 모듈CP ? 'critical' : 'normal'; });
+
+  // 모듈 태스크 기간 = 착수~완료 (코어 진행에 맞춰 분산되어 코어 대기 포함). 실작업 = 총조립기간
+  const 조립_nw = Math.max(0, lastAssemblyEnd - cycleStart + 1 - 총조립기간);
 
   // 공기산정표: 1개 행으로 표현 (총조립기간 = real, 간트에서 2행으로 분리)
   add(7,
