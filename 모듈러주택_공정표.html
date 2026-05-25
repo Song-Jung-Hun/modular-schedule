@@ -1870,7 +1870,13 @@ function renderEconomics(v) {
   // 공종별 물량: 기초·1층 = 바닥면적 / 코어 = 코어면적×총층수 / 모듈 = 총모듈수
   const 물량 = { 기초: v.바닥면적, '1층': v.바닥면적, 코어: v.코어골조면적 * v.총층수, 모듈: v.총모듈 };
   const 표시명 = { 기초:'기초 RC', '1층':'1층·필로티 골조', 코어:'코어 골조', 모듈:'모듈 설치+접합' };
-  const rows = []; let laborSum = 0;
+  const rows = []; let laborSum = 0, equipSum = 0;
+  // 토공사: 경비만 (켄텍이 장비만 표기 → 노무비 없음). 굴착기 0.6㎥ 손료 26,463원/hr·연료 11.6ℓ/hr
+  const 토공작업일 = v.바닥면적 * 0.0414;  // 켄텍 토공 작업일(가동율 적용 전)
+  const 토공경비 = 토공작업일 * (8 * (26463 + 11.6 * 유가) + WAGE_2026.건설기계운전사);
+  rows.push({ name: '토공사 (굴착)', labor: 0, equip: 토공경비 });
+  equipSum += 토공경비;
+  // 골조·모듈 노무비 (켄텍 man-day × 물량 × 시중노임)
   for (const k of ['기초','1층','코어','모듈']) {
     let cost = 0;
     for (const j in MANDAY[k]) cost += MANDAY[k][j] * (물량[k] || 0) * (WAGE_2026[j] || 0);
@@ -1882,7 +1888,7 @@ function renderEconomics(v) {
   const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
   const 크레인경비 = v.크레인대수 * 양중일 * (8 * (cr.son + cr.fuel * 유가) + WAGE_2026.건설기계운전사);
   const 모듈행 = rows.find(r => r.name === '모듈 설치+접합'); 모듈행.equip = 크레인경비;
-  const equipSum = 크레인경비;
+  equipSum += 크레인경비;
   const body = $('econBody');
   if (body) {
     body.innerHTML = rows.map(r =>
@@ -1891,7 +1897,7 @@ function renderEconomics(v) {
     `<tr class="total-row"><td style="text-align:left">합계</td><td class="num-col">${won(laborSum)}</td><td class="num-col">${won(equipSum)}</td><td class="num-col" style="font-weight:700">${won(laborSum + equipSum)}</td></tr>`;
   }
   const note = $('econNote');
-  if (note) note.innerHTML = `노무비 = 켄텍 실적 man-day × 물량 × 시중노임(2026.1.1) · 경비 = 크레인 ${v.크레인종류}t × ${양중일}일 양중(손료+연료@${유가}원/ℓ+운전원 ${v.크레인대수}대) · <b>토공·옥탑·지붕·마감·부대는 인부 자료 한계로 미반영</b>`;
+  if (note) note.innerHTML = `노무비 = 켄텍 실적 man-day × 물량 × 시중노임(2026.1.1) · 경비 = 토공(굴착기 0.6㎥) + 크레인 ${v.크레인종류}t×${양중일}일 양중(손료+연료@${유가}원/ℓ+운전원 ${v.크레인대수}대) · <b>옥탑·베이스·지붕·마감·부대는 인부 자료 한계로 노무비 미반영</b>`;
 }
 
 // ── 공기산정표 렌더 ──────────────────────────────────────────────────────
