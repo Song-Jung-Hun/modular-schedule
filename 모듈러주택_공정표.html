@@ -1888,13 +1888,25 @@ function renderEconomics(v) {
   const 토공경비 = 토공작업일 * (8 * (26463 + 11.6 * 유가) + WAGE_2026.건설기계운전사);
   rows.push({ name: '토공사 (굴착)', labor: 0, equip: 토공경비 });
   equipSum += 토공경비;
-  // 골조·모듈 노무비 (켄텍 man-day × 물량 × 시중노임)
-  for (const k of ['기초','1층','코어','모듈']) {
+  // 골조 노무비 (켄텍 man-day × 물량 × 시중노임)
+  for (const k of ['기초','1층','코어']) {
     let cost = 0;
     for (const j in MANDAY[k]) cost += MANDAY[k][j] * (물량[k] || 0) * (WAGE_2026[j] || 0);
     rows.push({ name: 표시명[k], labor: cost, equip: 0 });
     laborSum += cost;
   }
+  // 모듈 노무비 = 양중(고정) + 접합(접합 작업일에 비례). 기본=켄텍값, 접합 늘면 접합분만 증가
+  // 켄텍 모듈 노무비를 양중:접합 = 2:1(작업일 비율)로 분할 → 접합분 × (현재 접합일 ÷ 기본 접합일)
+  const 모듈baseline = (MANDAY.모듈.철근공 * WAGE_2026.철근공 + MANDAY.모듈.보통인부 * WAGE_2026.보통인부) * v.총모듈;
+  const 층당모듈수_e = v.층당세대 * v.세대당모듈;
+  // 올림 전 원값으로 비율 산정 (반올림 왜곡 방지): 현재 접합량 ÷ 기본(모듈당 4개) 접합량
+  const raw현재접합 = (층당모듈수_e * v.모듈당수직접합 * v.수직접합속도)
+                    + (v.세대층 > 0 ? v.수평접합부 / v.세대층 * v.수평접합속도 : 0);
+  const raw기본접합 = 층당모듈수_e * 4 * v.수직접합속도;
+  const 접합배수 = raw기본접합 > 0 ? (raw현재접합 / raw기본접합) : 1;
+  const 모듈노무 = 모듈baseline * (2/3 + (1/3) * 접합배수);
+  rows.push({ name: 표시명.모듈, labor: 모듈노무, equip: 0 });
+  laborSum += 모듈노무;
   // 경비: 이동식 크레인(모듈 양중) — 양중일 × 8hr × (손료 + 연료×유가) + 운전원 일당
   const cr = CRANE_COST[v.크레인종류] || CRANE_COST[130];
   const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
