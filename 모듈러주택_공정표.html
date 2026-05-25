@@ -1012,14 +1012,6 @@
               </div>
               <span class="note-text" id="note_가동율">지역 선택 시 자동 입력 / 직접 수정 가능</span>
             </div>
-            <div class="input-group">
-              <label>연간 비작업일 (자동)</label>
-              <div class="input-row">
-                <span class="calc-val" id="r_비작업일">153</span>
-                <span class="unit">일/년</span>
-              </div>
-              <span class="note-text">= 365 × (1 − 가동율) · 주말·공휴일·기상 통합</span>
-            </div>
             <div class="input-group" style="grid-column:1/-1">
               <label>착공 예정일 <span style="font-weight:400;color:#999;font-size:11px">(공기산정표·바차트 날짜 표시)</span></label>
               <div class="date-picker-wrapper">
@@ -1766,8 +1758,6 @@ function calc() {
     코어선행일:    +$('i_코어선행일').value    || 0,
     가동율:        Math.min(Math.max(+$('i_가동율').value || 58, 20), 100) / 100,  // 기상청 2021~2025 지역 가동율(0~1)
   };
-  // 연간 비작업일 표시 = 365 × (1 − 가동율)
-  { const el = $('r_비작업일'); if (el) el.textContent = Math.round(365 * (1 - v.가동율)); }
   // 강봉 연결 방식 — 구조전용층 없음
   v.총층수        = v.세대층;
   v.총세대        = v.세대층 * v.층당세대;
