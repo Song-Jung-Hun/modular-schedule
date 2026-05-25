@@ -795,7 +795,7 @@
             <div style="margin-top:8px; background:#EEF4FF; border-radius:6px; padding:8px 12px; font-size:11px; color:#555;">
               <strong>켄텍 대학원숙소 비례 기준 (1층 슬래브 701m²):</strong> 바닥면적 입력 기준<br>
 토공사 작업일 29일 = 0.0414일/m² · 기초RC 14.24일 = 0.0203일/m² · 1층·필로티 17.87일 = 0.0255일/m² (모두 ÷ 지역 가동율로 달력 환산)<br>
-              <span style="color:#888;">※ 지하층 골조는 아직 광양 기준 유지 (B2F 0.090·B1F 0.097일/m², 층당 모듈 면적 기준)</span>
+              <span style="color:#888;">※ 지하층 골조는 광양 기준 (B2F 0.090·B1F 0.097일/m²) × 바닥면적 — 토공·기초·1층과 동일하게 바닥면적 기준</span>
             </div>
           </div>
 
@@ -887,14 +887,6 @@
               <span class="note-text">★ OTKCRK p.163: 기준층 6개/일 (순수 양중, 접합 별도) / 참고: 켄텍은 접합 포함 5개/일</span>
               <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163','kentech_module'])">📄 근거 보기</button>
             </div>
-            <div class="input-group">
-              <label>기준층 총 일일 속도 (자동)</label>
-              <div class="input-row">
-                <span class="calc-val" id="r_일일설치속도">6</span>
-                <span class="unit">유닛/일</span>
-              </div>
-              <span class="note-text">= 크레인 대수 × 기준층 속도</span>
-            </div>
             <div class="input-group" style="grid-column: 1 / -1;">
               <label>🏗️ 크레인 양중 적합성 검토 (모듈 중량 기준)</label>
               <div id="r_크레인적합" style="padding:9px 14px; border-radius:7px; font-size:12px; font-weight:700; background:#F5F5F5; color:#888; margin-top:4px;">
@@ -928,14 +920,6 @@
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['otkcrk_p163'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
-                <label>층당 수직접합 기간 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_층당강봉일">1</span>
-                  <span class="unit">일/층</span>
-                </div>
-                <span class="note-text">= CEILING(층당모듈 × 모듈당수직접합 × 개당소요일)</span>
-              </div>
-              <div class="input-group">
                 <label>수평접합부 수</label>
                 <div class="input-row">
                   <input type="number" id="i_수평접합부" value="0" min="0" oninput="calc()">
@@ -952,32 +936,12 @@
                 <span class="note-text">접합부 1개당 소요 기간 (추정값 — 별도 공식 기준 없음)</span>
               </div>
               <div class="input-group">
-                <label>층당 수평접합 기간 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_층당수평접합일">0</span>
-                  <span class="unit">일/층</span>
-                </div>
-                <span class="note-text">= CEILING(수평접합부 ÷ 세대층 × 일/접합부)</span>
-              </div>
-              <div class="input-group">
-                <label>층당 접합 합계 (자동)</label>
+                <label>층당 접합 기간 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_층당접합일합계">1</span>
                   <span class="unit">일/층 (수직+수평)</span>
                 </div>
-                <span class="note-text">= 수직접합 + 수평접합</span>
-              </div>
-              <div class="input-group">
-                <label>층당 모듈 설치일 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_최하층설치일">3</span>
-                  <span class="unit">일/층 (최하층)</span>
-                </div>
-                <div class="input-row" style="margin-top:4px;">
-                  <span class="calc-val" id="r_기준층설치일">2</span>
-                  <span class="unit">일/층 (기준층 2~n층)</span>
-                </div>
-                <span class="note-text">= CEILING(층당모듈 ÷ 크레인대수×속도)</span>
+                <span class="note-text">= 수직접합 + 수평접합 (접합 개수 조정 시 여기에 반영)</span>
               </div>
               <div class="input-group">
                 <label>총 조립+접합 기간, 실작업일 (자동)</label>
@@ -1082,6 +1046,7 @@
               <span class="note-text">크레인 연료비 산정용 (현재 경유가)</span>
             </div>
           </div>
+          <button class="ref-btn" style="margin-bottom:10px;" onclick="openCrew()">🔧 공종별 작업조(인부) 구성 보기</button>
           <div style="overflow-x:auto;">
             <table class="schedule-table" id="econTable" style="font-size:12px;">
               <thead><tr><th style="text-align:left">공종</th><th>노무비(원)</th><th>경비(원)</th><th>합계(원)</th></tr></thead>
@@ -1164,6 +1129,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="crewModal" onclick="closeCrew(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🔧 공종별 작업조(인부) 구성</h3>
+      <button class="modal-close" onclick="closeCrewBtn()">✕</button>
+    </div>
+    <div class="modal-body" id="crewModalBody"></div>
+  </div>
+</div>
+
 <script>
 // ── 유틸 ──────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -1226,7 +1201,58 @@ function closeRefBtn() {
   $('refModal').classList.remove('open');
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRefBtn(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeRefBtn(); closeCrewBtn(); } });
+
+// ── 공종별 작업조(인부) 구성 모달 ──────────────────────────────────────────
+function openCrew() {
+  if (!window._econData) { try { calc(); } catch (e) {} }
+  const data = window._econData || { rows: [] };
+  const won = n => Math.round(n).toLocaleString();
+  let html = `<div style="font-size:12px;color:#555;background:#EEF4FF;border-radius:6px;padding:10px 12px;margin-bottom:14px;line-height:1.7;">
+    <b>공종별로 어떤 직종이 몇 명, 며칠, 일당 얼마로 투입되는지</b> 보여줍니다.<br>
+    · <b>골조·모듈·옥탑</b>: 켄텍 실측 <b>man-day(인·일)</b> 기반 → '투입(명)'은 인·일 ÷ 작업일로 환산한 <b>평균 동시 인원</b>(소수 가능)<br>
+    · <b>베이스·지붕·마감·부대</b>: OTKCRK 인원 기준 (<span style="color:#c00;">(추정)</span> 표시는 인원이 추정값)</div>`;
+  data.rows.forEach(r => {
+    const hasCrew  = r.crew && r.crew.length;
+    const hasEquip = r.equipDetail && r.equipDetail.length;
+    if (!hasCrew && !hasEquip) return;
+    html += `<div style="margin-bottom:18px;">
+      <div style="font-weight:700;color:#385723;border-bottom:2px solid #385723;padding-bottom:5px;margin-bottom:7px;">${r.name}</div>`;
+    if (hasCrew) {
+      html += `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#EAF1E0;">
+          <th style="text-align:left;padding:5px 8px;">직종</th><th style="padding:5px 8px;">투입(명)</th>
+          <th style="padding:5px 8px;">작업일</th><th style="padding:5px 8px;">인·일</th>
+          <th style="padding:5px 8px;">일당(원)</th><th style="padding:5px 8px;">소계(원)</th>
+        </tr></thead><tbody>`;
+      r.crew.forEach(c => {
+        html += `<tr style="border-bottom:1px solid #eee;">
+          <td style="text-align:left;padding:4px 8px;">${c.직종}${c.추정 ? ' <span style="color:#c00;font-size:10px;">(추정)</span>' : ''}</td>
+          <td style="text-align:center;padding:4px 8px;">${c.인원}</td>
+          <td style="text-align:center;padding:4px 8px;">${c.작업일}</td>
+          <td style="text-align:center;padding:4px 8px;">${c.manday}</td>
+          <td style="text-align:right;padding:4px 8px;">${won(c.일당)}</td>
+          <td style="text-align:right;padding:4px 8px;">${won(c.소계)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+    if (hasEquip) {
+      r.equipDetail.forEach(e => {
+        html += `<div style="font-size:12px;color:#385723;margin-top:6px;">🏗️ <b>${e.장비}</b> ${e.대수}대 × ${e.시간} × ${e.작업일}일 — 운전원 ${e.운전원}</div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  $('crewModalBody').innerHTML = html;
+  $('crewModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCrew(e) { if (e.target === $('crewModal')) closeCrewBtn(); }
+function closeCrewBtn() {
+  $('crewModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 // ── 날짜 유틸 ────────────────────────────────────────────────────────────
 let pickedDate   = new Date(2026, 0, 1);
@@ -1500,11 +1526,11 @@ function buildTasks(v) {
     const 지하골조_factor = v.지하층수 === 1 ? 0.097
                           : v.지하층수 === 2 ? 0.187
                           : 0.187 + (v.지하층수 - 2) * 0.090;
-    const 지하골조_real = Math.max(1, ceil(v.층당모듈면적 * 지하골조_factor));
+    const 지하골조_real = Math.max(1, ceil(v.바닥면적 * 지하골조_factor));
     const 지하골조_nw = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
     add(3.5, `지하층 골조 (지하 ${v.지하층수}층)`,
         지하골조_real, 지하골조_nw, task(2.5).end + 1, 'critical',
-        `광양 기가타운 실적: B2F 43일(0.090일/m²)·B1F 46일(0.097일/m²) × ${v.층당모듈면적.toFixed(0)}m² = ${지하골조_real}일 (달력 기간, 광양 비작업일 포함)`,
+        `광양 기가타운 실적: B2F 43일(0.090일/m²)·B1F 46일(0.097일/m²) × 바닥면적 ${v.바닥면적.toFixed(0)}m² = ${지하골조_real}일 (달력 기간, 광양 비작업일 포함)`,
         ['gwangyang_structure']);
     afterFoundEnd = s[s.length - 1].end;
   }
@@ -1812,18 +1838,13 @@ function calc() {
     : v.지하층수 === 2 ? 0.187
     : 0.187 + (v.지하층수 - 2) * 0.090;
   const 지하골조기간_real = v.지하층수 === 0 ? 0
-    : Math.max(1, Math.ceil(v.층당모듈면적 * 지하골조_factor_disp));
+    : Math.max(1, Math.ceil(v.바닥면적 * 지하골조_factor_disp));
   $('r_지하골조기간').textContent   = 지하골조기간_real;
   const gDiv = $('g_지하골조');
   if (gDiv) gDiv.style.display = v.지하층수 > 0 ? '' : 'none';
 
   $('r_코어층당일').textContent         = v.코어층당일;
   $('r_코어총기간').textContent         = v.코어총기간;
-  $('r_일일설치속도').textContent       = v.일일설치속도;
-  $('r_최하층설치일').textContent       = v.층당설치일_최하층;
-  $('r_기준층설치일').textContent       = v.층당설치일_기준층;
-  $('r_층당강봉일').textContent         = v.층당강봉일;
-  $('r_층당수평접합일').textContent     = v.층당수평접합일;
   $('r_층당접합일합계').textContent     = v.층당접합일;
   $('r_총조립기간').textContent         = v.총조립기간;
 
@@ -1871,6 +1892,24 @@ function calc() {
 function renderEconomics(v, tasks) {
   const 유가 = +$('i_유가').value || 1600;
   const won = n => Math.round(n).toLocaleString();
+  // 태스크 실작업일 조회 (이름 앞부분 일치)
+  const dur = nm => { const t = tasks.find(x => x.name.startsWith(nm)); return t ? t.real : 0; };
+  // 평균 동시 인원 = man-day(인·일) ÷ 작업일
+  const avgPpl = (md, days) => days > 0 ? Math.round(md / days * 10) / 10 : 0;
+  // man-day 맵 → 작업조 내역 (직종별 인·일·평균인원·일당·소계)
+  const mandayCrew = (map, qty, days, scale) => {
+    scale = scale || 1;
+    return Object.keys(map).map(j => {
+      const md = map[j] * (qty || 0) * scale;
+      return { 직종: j, 인원: avgPpl(md, days), 작업일: days, manday: Math.round(md * 10) / 10,
+               일당: WAGE_2026[j] || 0, 소계: Math.round(md * (WAGE_2026[j] || 0)), 추정: false };
+    });
+  };
+  // 고정 인원 × 작업일 내역
+  const fixedCrew = (직종, 인원, days, 일당, 추정) =>
+    [{ 직종, 인원, 작업일: days, manday: Math.round(인원 * days * 10) / 10,
+       일당: Math.round(일당), 소계: Math.round(인원 * days * 일당), 추정: !!추정 }];
+
   // 공종별 물량: 기초·1층 = 바닥면적 / 코어 = 코어면적×총층수 / 모듈 = 총모듈수
   const 물량 = { 기초: v.바닥면적, '1층': v.바닥면적, 코어: v.코어골조면적 * v.총층수, 모듈: v.총모듈 };
   const 표시명 = { 기초:'기초 RC', '1층':'1층·필로티 골조', 코어:'코어 골조', 모듈:'모듈 설치+접합' };
@@ -1878,7 +1917,9 @@ function renderEconomics(v, tasks) {
   // 토공사: 경비만 (켄텍이 장비만 표기 → 노무비 없음). 굴착기 0.6㎥ 손료 26,463원/hr·연료 11.6ℓ/hr
   const 토공작업일 = v.바닥면적 * 0.0414;  // 켄텍 토공 작업일(가동율 적용 전)
   const 토공경비 = 토공작업일 * (8 * (26463 + 11.6 * 유가) + WAGE_2026.건설기계운전사);
-  rows.push({ name: '토공사 (굴착)', labor: 0, equip: 토공경비 });
+  rows.push({ name: '토공사 (굴착)', labor: 0, equip: 토공경비, crew: [],
+    equipDetail: [{ 장비: '굴착기 0.6㎥', 대수: 1, 시간: '8hr/일',
+                    작업일: Math.round(토공작업일 * 10) / 10, 운전원: '건설기계운전사 1명' }] });
   equipSum += 토공경비;
   // 골조 노무비 (켄텍 man-day × 물량 × 시중노임)
   let 코어노무 = 0;
@@ -1886,7 +1927,8 @@ function renderEconomics(v, tasks) {
     let cost = 0;
     for (const j in MANDAY[k]) cost += MANDAY[k][j] * (물량[k] || 0) * (WAGE_2026[j] || 0);
     if (k === '코어') 코어노무 = cost;
-    rows.push({ name: 표시명[k], labor: cost, equip: 0 });
+    rows.push({ name: 표시명[k], labor: cost, equip: 0,
+                crew: mandayCrew(MANDAY[k], 물량[k] || 0, dur(표시명[k])) });
     laborSum += cost;
   }
   // 모듈 노무비 = 양중(고정) + 접합(접합 작업일에 비례). 기본=켄텍값, 접합 늘면 접합분만 증가
@@ -1898,28 +1940,41 @@ function renderEconomics(v, tasks) {
                     + (v.세대층 > 0 ? v.수평접합부 / v.세대층 * v.수평접합속도 : 0);
   const raw기본접합 = 층당모듈수_e * 4 * v.수직접합속도;
   const 접합배수 = raw기본접합 > 0 ? (raw현재접합 / raw기본접합) : 1;
-  const 모듈노무 = 모듈baseline * (2/3 + (1/3) * 접합배수);
-  rows.push({ name: 표시명.모듈, labor: 모듈노무, equip: 0 });
+  const 모듈scale = (2/3 + (1/3) * 접합배수);
+  const 모듈노무 = 모듈baseline * 모듈scale;
+  rows.push({ name: 표시명.모듈, labor: 모듈노무, equip: 0,
+              crew: mandayCrew(MANDAY.모듈, v.총모듈, v.총조립기간, 모듈scale) });
   laborSum += 모듈노무;
   // ── 빈 공종 노무비 = 인원 × 공종 작업일(실작업, 우리 규모 비례) × 직종 일당 ──
-  const dur = nm => { const t = tasks.find(x => x.name.startsWith(nm)); return t ? t.real : 0; };
-  const add노무 = (name, cost) => { rows.push({ name, labor: cost, equip: 0 }); laborSum += cost; };
-  add노무('옥탑(코어 상부)', v.총층수 > 0 ? 코어노무 / v.총층수 : 0);   // 켄텍 코어 1개 층분
-  add노무('베이스플레이트', 8 * dur('베이스플레이트') * WAGE_2026.특별인부);  // OTKCRK 8명
-  add노무('지붕 트러스', 6 * dur('지붕 트러스') * WAGE_2026.철골공);          // OTKCRK 6명
-  add노무('지붕 패널', 6 * dur('지붕 패널') * WAGE_2026.판넬조립공);          // OTKCRK 6명
-  add노무('방수시트', 2 * dur('방수시트') * WAGE_2026.방수공);               // OTKCRK 2명
+  const add노무 = (name, cost, crew) => { rows.push({ name, labor: cost, equip: 0, crew: crew || [] }); laborSum += cost; };
+  add노무('옥탑(코어 상부)', v.총층수 > 0 ? 코어노무 / v.총층수 : 0,
+    mandayCrew(MANDAY.코어, v.코어골조면적, dur('옥탑')));   // 켄텍 코어 1개 층분
+  add노무('베이스플레이트', 8 * dur('베이스플레이트') * WAGE_2026.특별인부,
+    fixedCrew('특별인부', 8, dur('베이스플레이트'), WAGE_2026.특별인부));  // OTKCRK 8명
+  add노무('지붕 트러스', 6 * dur('지붕 트러스') * WAGE_2026.철골공,
+    fixedCrew('철골공', 6, dur('지붕 트러스'), WAGE_2026.철골공));          // OTKCRK 6명
+  add노무('지붕 패널', 6 * dur('지붕 패널') * WAGE_2026.판넬조립공,
+    fixedCrew('판넬조립공', 6, dur('지붕 패널'), WAGE_2026.판넬조립공));    // OTKCRK 6명
+  add노무('방수시트', 2 * dur('방수시트') * WAGE_2026.방수공,
+    fixedCrew('방수공', 2, dur('방수시트'), WAGE_2026.방수공));             // OTKCRK 2명
   // 마감: 마감 직종(미장·도배·타일·도장) 평균 일당 × 인원(추정 6) × 작업일 / 부대: 조경공·보통인부
   const 마감일당 = (WAGE_2026.미장공 + WAGE_2026.도배공 + WAGE_2026.타일공 + WAGE_2026.도장공) / 4;
-  add노무('현장마감(외부접합·외장)', 6 * dur('현장마감') * 마감일당);
-  add노무('건축마감(공용부위)', 6 * dur('건축마감') * 마감일당);
-  add노무('부대공사(토목·조경)', 4 * dur('부대공사') * (WAGE_2026.조경공 + WAGE_2026.보통인부) / 2);
+  add노무('현장마감(외부접합·외장)', 6 * dur('현장마감') * 마감일당,
+    fixedCrew('마감공(미장·도배·타일·도장 평균)', 6, dur('현장마감'), 마감일당, true));
+  add노무('건축마감(공용부위)', 6 * dur('건축마감') * 마감일당,
+    fixedCrew('마감공(미장·도배·타일·도장 평균)', 6, dur('건축마감'), 마감일당, true));
+  add노무('부대공사(토목·조경)', 4 * dur('부대공사') * (WAGE_2026.조경공 + WAGE_2026.보통인부) / 2,
+    fixedCrew('조경공·보통인부 평균', 4, dur('부대공사'), (WAGE_2026.조경공 + WAGE_2026.보통인부) / 2, true));
   // 경비: 이동식 크레인(모듈 양중) — 양중일 × 8hr × (손료 + 연료×유가) + 운전원 일당
   const cr = CRANE_COST[v.크레인종류] || CRANE_COST[130];
   const 양중일 = v.세대층 > 0 ? v.층당설치일_최하층 + Math.max(v.세대층 - 1, 0) * v.층당설치일_기준층 : 0;
   const 크레인경비 = v.크레인대수 * 양중일 * (8 * (cr.son + cr.fuel * 유가) + WAGE_2026.건설기계운전사);
   const 모듈행 = rows.find(r => r.name === '모듈 설치+접합'); 모듈행.equip = 크레인경비;
+  모듈행.equipDetail = [{ 장비: `이동식 크레인 ${v.크레인종류}t`, 대수: v.크레인대수, 시간: '8hr/일',
+                         작업일: 양중일, 운전원: `건설기계운전사 ${v.크레인대수}명` }];
   equipSum += 크레인경비;
+  // 작업조(인부) 구성 모달용 데이터 저장
+  window._econData = { rows: rows };
   const body = $('econBody');
   if (body) {
     body.innerHTML = rows.map(r =>
