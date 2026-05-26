@@ -946,14 +946,6 @@
                 <span class="note-text">접합부 1개당 소요 기간 (추정값 — 별도 공식 기준 없음)</span>
               </div>
               <div class="input-group">
-                <label>층당 접합 작업량 (자동)</label>
-                <div class="input-row">
-                  <span class="calc-val" id="r_층당접합일합계">1</span>
-                  <span class="unit">일/층 (수직+수평 합)</span>
-                </div>
-                <span class="note-text">총 접합 작업량(참고용). 실제 공기는 수직→양중에 합산, 수평→양중과 병행 → 한 층 = max(양중+수직, 수평)</span>
-              </div>
-              <div class="input-group">
                 <label>총 조립+접합 기간, 실작업일 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_총조립기간">45</span>
@@ -2050,7 +2042,6 @@ function calc() {
 
   $('r_코어층당일').textContent         = v.코어층당일;
   $('r_코어총기간').textContent         = v.코어총기간;
-  $('r_층당접합일합계').textContent     = v.층당접합일;
   $('r_총조립기간').textContent         = v.총조립기간;
 
   // 크레인 양중 적합성 검토 (양중 중량 = 모듈 중량 × 1.25)
