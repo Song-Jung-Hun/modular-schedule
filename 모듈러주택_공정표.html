@@ -909,7 +909,7 @@
           <!-- 접합 작업 -->
           <div style="margin-top:16px; padding-top:14px; border-top:1px solid #EEE;">
             <div style="font-weight:700; color:#385723; font-size:12px; margin-bottom:10px;">
-              🔩 접합 작업 (층별 순차 — 설치 완료 후 바로 연결, 다음 층으로 진행)
+              🔩 접합 작업 (수직접합=양중에 합침 · 수평접합=양중과 동시 진행 병행 → 한 층 = max(양중+수직, 수평))
             </div>
             <div class="input-grid">
               <div class="input-group">
@@ -918,7 +918,7 @@
                   <input type="number" id="i_모듈당수직접합" value="4" min="0" step="1" oninput="calc()">
                   <span class="unit">개/모듈</span>
                 </div>
-                <span class="note-text">모듈 꼭지점 기둥 = <b>4개/모듈</b> (기본) · 수직접합 총수 = 모듈수 × 이 값</span>
+                <span class="note-text">모듈 꼭지점 기둥 = <b>4개/모듈</b> (기본) · 수직접합 총수 = 모듈수 × 이 값 · <b>양중 시간에 합산</b>(개수↑ → 공기↑)</span>
               </div>
               <div class="input-group">
                 <label>수직접합 1개당 소요일</label>
@@ -935,7 +935,7 @@
                   <input type="number" id="i_수평접합부" value="0" min="0" oninput="calc()">
                   <span class="unit">접합부/층</span>
                 </div>
-                <span class="note-text">한 층 기준 입력. 예: 층당 n모듈 1열 배치 → (n−1)개/층</span>
+                <span class="note-text">한 층 기준 입력 (모델 JSON 불러오면 자동 검출). 예: 층당 n모듈 1열 배치 → (n−1)개/층</span>
               </div>
               <div class="input-group">
                 <label>수평접합 소요 기간</label>
@@ -946,12 +946,12 @@
                 <span class="note-text">접합부 1개당 소요 기간 (추정값 — 별도 공식 기준 없음)</span>
               </div>
               <div class="input-group">
-                <label>층당 접합 기간 (자동)</label>
+                <label>층당 접합 작업량 (자동)</label>
                 <div class="input-row">
                   <span class="calc-val" id="r_층당접합일합계">1</span>
-                  <span class="unit">일/층 (수직+수평)</span>
+                  <span class="unit">일/층 (수직+수평 합)</span>
                 </div>
-                <span class="note-text">= 수직접합 + 수평접합 (접합 개수 조정 시 여기에 반영)</span>
+                <span class="note-text">총 접합 작업량(참고용). 실제 공기는 수직→양중에 합산, 수평→양중과 병행 → 한 층 = max(양중+수직, 수평)</span>
               </div>
               <div class="input-group">
                 <label>총 조립+접합 기간, 실작업일 (자동)</label>
@@ -1561,11 +1561,11 @@ function buildTasks(v) {
     `켄텍 실적: 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² × 코어면적 ${v.코어골조면적}m² ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.코어층당일}일/층 × ${v.총층수}층`,
     ['kentech_core']);
 
-  // 5. 옥탑 골조 — 켄텍 PHF(펜트하우스층) 면적 비례: 9.04작업일 ÷ 126.29㎡ = 0.0716일/㎡ × 코어면적(옥탑=코어 상부)
-  const 옥탑작업일 = v.코어바닥면적 * 0.0716;
+  // 5. 옥탑 골조 — 켄텍 PHF(펜트하우스층) 면적 비례: 9.04작업일 ÷ 켄텍 기준층 475㎡ = 0.019일/㎡ × 코어바닥면적
+  const 옥탑작업일 = v.코어바닥면적 * 0.019;
   const t5_real = Math.max(1, calG(옥탑작업일));
   add(5, '옥탑 골조 (코어 상부: 계단실·물탱크실)', t5_real, 0, task(4).end + 1, 'normal',
-    `켄텍 PHF 실적: 9.04작업일 ÷ 126.29㎡ = 0.0716일/㎡ × 코어면적 ${v.코어바닥면적.toFixed(0)}㎡ ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t5_real}일 (옥탑=코어 상부, 바닥면적 비례)`,
+    `켄텍 PHF 실적: 옥탑 9.04작업일 ÷ 켄텍 기준층 475㎡ = 0.019일/㎡ × 코어바닥면적 ${v.코어바닥면적.toFixed(0)}㎡ ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t5_real}일 (옥탑=코어 상부, 바닥면적 비례)`,
     ['kentech_core']);
   s[s.length - 1].work = Math.max(1, Math.round(옥탑작업일));   // 노무비 산정용 실작업일
 
@@ -1578,7 +1578,7 @@ function buildTasks(v) {
     ['otkcrk_p135', 'otkcrk_p163'], true);
   s[s.length - 1].work = Math.max(1, Math.round(베이스작업일));   // 노무비 산정용 실작업일
 
-  // ── 7. 모듈 현장 조립 + 접합 작업 (층별 순차: 인양 → 수직접합(강봉) → 수평접합) ──
+  // ── 7. 모듈 현장 조립 + 접합 (병행: [양중+수직접합(강봉)] ∥ [수평접합], 한 층 = max) ──
   // 코어병행형: 코어 착수 후 '코어 선행 일수'만큼 지난 뒤 모듈 시작 → 코어와 병행 진행
   // (베이스플레이트 완료 이후로도 보정 → 둘 중 늦은 날 착수)
   const cycleStart = max(task(4).start + v.코어선행일, task(6).end + 1);
@@ -1754,20 +1754,53 @@ function importScene(json, fname) {
   // 수직접합: summary 있으면 모듈당으로 환산 (없으면 기존 4개/모듈 유지)
   if (sum.vertical_joints_total != null && 총모듈)
     $('i_모듈당수직접합').value = Math.max(0, Math.round(sum.vertical_joints_total / 총모듈));
-  // 수평접합부(층당): summary 우선, 없으면 모듈 좌표로 인접쌍 자동 검출
+  // 수평접합부(층당): ① summary ② 실제 접합데이터(joint_records 모듈-모듈) ③ 좌표 인접(폴백)
   let 수평txt = '';
+  const mj = readModuleJoints(comps);   // 파일에 적힌 실제 모듈-모듈 접합 읽기
   if (sum.horizontal_joints_total != null && 층수) {
     $('i_수평접합부').value = Math.max(0, Math.round(sum.horizontal_joints_total / 층수));
     수평txt = ` · 수평접합 ${$('i_수평접합부').value}개/층(요약)`;
+  } else if (mj.hasData) {
+    $('i_수평접합부').value = mj.perFloorMax;
+    수평txt = ` · 수평접합 ${mj.perFloorMax}개/층(실제 접합데이터)`;
   } else {
     const hj = countHorizJointsFloor0(comps);
-    if (hj.ok) { $('i_수평접합부').value = hj.count; 수평txt = ` · 수평접합 ${hj.count}개/층(좌표 자동검출)`; }
+    if (hj.ok) { $('i_수평접합부').value = hj.count; 수평txt = ` · 수평접합 ${hj.count}개/층(좌표 인접 추정)`; }
   }
 
   calc();
   const src = json.summary ? '요약값(summary)' : '부재 좌표 계산';
   const 중량txt = 중량 ? ` · 최대중량 ${중량}t` : ' · 중량 미포함(직접 입력)';
   setSceneStatus(`✅ ${fname} 불러옴 [${src}]: ${층수}층 · 모듈 ${총모듈}개(층당 ${층당}) · 바닥 ${Math.round(바닥)}㎡ · 코어 ${Math.round(코어)}㎡${수평txt}${중량txt}. 크레인·접합속도·가동율·단가는 직접 확인하세요.`, false);
+}
+
+// 파일에 적힌 실제 모듈-모듈 접합(joint_records) 읽기 — 접합 1개당 양쪽 모듈이 시간 절반씩
+// · 한 쌍에 접합이 여러 개일 수 있으므로 각 joint_record를 개별 접합으로 셈(위치로 중복 제거)
+// · 층별 접합 수를 집계해 대표값(층 최댓값) 반환. 모듈 joint_records가 비면 hasData:false → 좌표 폴백
+function readModuleJoints(comps) {
+  const modIds = new Set(comps.filter(c => c.comp_type === 'module' || c.comp_type === 'vertical_module').map(c => c.id));
+  const byId = {}; comps.forEach(c => { byId[c.id] = c; });
+  const seen = new Set();
+  const perFloor = {};
+  comps.forEach(c => {
+    if (!modIds.has(c.id)) return;
+    (c.joint_records || []).forEach(j => {
+      if (!modIds.has(j.target_comp_id)) return;   // 모듈↔모듈 접합만
+      // 무순서 쌍 + 접합 위치로 중복 제거 (양쪽에 기록돼 있어도 1개로)
+      const pair = [c.id, j.target_comp_id].sort((a, b) => a - b).join('-');
+      const loc = (j.target_xy ? j.target_xy.map(Math.round).join(',') : '') + '@' + Math.round(j.target_z || 0);
+      const key = pair + '#' + loc;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const f = +c.floor_index || 0;
+      perFloor[f] = (perFloor[f] || 0) + 1;
+    });
+  });
+  const floors = Object.keys(perFloor);
+  if (floors.length === 0) return { hasData: false, perFloorMax: 0, total: 0 };
+  const perFloorMax = Math.max.apply(null, floors.map(f => perFloor[f]));
+  const total = floors.reduce((s, f) => s + perFloor[f], 0);
+  return { hasData: true, perFloorMax, total };
 }
 
 // 모듈 좌표로 같은 층 인접 모듈쌍(=수평접합) 자동 검출 — 수직모듈 포함
