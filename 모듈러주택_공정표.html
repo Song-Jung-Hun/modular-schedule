@@ -654,7 +654,7 @@
 
     <!-- 모델(JSON) 불러오기 -->
     <div style="margin-bottom:16px; padding:12px 16px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px;">
-      <button class="ref-btn" style="font-size:13px;" onclick="document.getElementById('sceneFileInput').click()">📂 모델(JSON) 불러오기</button>
+      <button class="ref-btn" style="font-size:13px;" onclick="document.getElementById('sceneFileInput').click()">📂 파일 불러오기</button>
       <input type="file" id="sceneFileInput" accept=".json,application/json" style="display:none" onchange="onSceneFile(event)">
       <span id="sceneLoadStatus" style="margin-left:10px; font-size:12px; color:#555;">친구 프로그램의 scene.json을 불러오면 층수·모듈수·면적·코어가 자동 입력됩니다. (크레인·속도·가동율·단가는 직접 입력)</span>
     </div>
@@ -1609,7 +1609,7 @@ function buildTasks(v) {
     const 코어층완료 = 코어start + (f + 1) * 코어층당 - 1;   // (f+1)층 코어 완료일
     const fStart = Math.max(코어층완료 + 1, prevEnd + 1);     // 그 층 코어 완료 후 & 직전 층 모듈 후
     _modBars.push({ start: fStart, total: 달_양중일, type: 'critical',
-                    name: `${f+1}층 양중+수직접합 (${달_양중일}일)` });
+                    name: `${f+1}층 모듈 설치 (${달_양중일}일)` });
     if (달_수평 > 0) {
       // 수평접합은 양중과 같은 시점에 시작 (다른 쪽에서 동시 진행)
       _boltBars.push({ start: fStart, total: 달_수평, type: 'orange',
@@ -2287,7 +2287,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
       ganttRows.push({
         noText:  ganttRowNo,
         noClass: 'critical',
-        label:   `모듈 양중 + 수직접합 (크레인 ${v.크레인대수}대, 수직 ${v.모듈당수직접합}개/모듈 포함)`,
+        label:   `모듈 설치 (크레인 ${v.크레인대수}대)`,
         bars:    t.modBars,
         parallel: false
       });
