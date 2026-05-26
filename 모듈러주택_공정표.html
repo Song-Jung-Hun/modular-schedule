@@ -1574,7 +1574,7 @@ function buildTasks(v) {
   const 층당모듈_base = v.층당세대 * v.세대당모듈;
   const 베이스작업일 = Math.max(1, 5 * 층당모듈_base / 베이스기준모듈);   // 5일 ÷ 10모듈 × 우리 층당모듈
   add(6, '베이스플레이트 설치', calG(베이스작업일), 0, afterPilotiEnd + 1, 'normal',
-    `OTKCRK p.135/163: 앵커볼트+베이스+무수축몰탈 = 천안두정 5일(기준 10모듈/층) ÷ 10 × ${층당모듈_base}모듈 = ${베이스작업일.toFixed(1)}작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(베이스작업일)}일 (1층 모듈수 비례, 옥외) / 코어골조와 병행`,
+    `OTKCRK p.135/163: 앵커볼트+베이스+무수축몰탈 = 천안두정 5일(기준 10모듈/층) ÷ 10 × ${층당모듈_base}모듈 = ${베이스작업일.toFixed(1)}작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(베이스작업일)}일 (1층 모듈수 비례, 옥외) / 코어골조와 동시 진행`,
     ['otkcrk_p135', 'otkcrk_p163'], true);
   s[s.length - 1].work = Math.max(1, Math.round(베이스작업일));   // 노무비 산정용 실작업일
 
@@ -1613,7 +1613,7 @@ function buildTasks(v) {
     if (달_수평 > 0) {
       // 수평접합은 양중과 같은 시점에 시작 (다른 쪽에서 동시 진행)
       _boltBars.push({ start: fStart, total: 달_수평, type: 'orange',
-                       name: `${f+1}층 수평접합 (${달_수평}일, 양중과 병행)` });
+                       name: `${f+1}층 수평접합 (${달_수평}일, 양중과 동시)` });
     }
     prevEnd = fStart + 달_층소요일 - 1;
   }
@@ -2204,7 +2204,7 @@ function renderSchedule(tasks, totalDays, startDate) {
     if (isCrit)   tr.className = 'critical-row';
     if (isOrange) tr.className = 'orange-row';
 
-    const badge = t.parallel ? '<span class="parallel-badge">병행</span>' : '';
+    const badge = '';
     const critBadge = isCrit ? '<span class="critical-badge">CP</span>' : '';
 
     const taskRefs = t.refs || [];
@@ -2248,7 +2248,7 @@ function renderSchedule(tasks, totalDays, startDate) {
     <td class="num-col">${totalNW}일</td>
     <td class="num-col">${totalDays}일</td>
     <td colspan="3" style="text-align:center; font-size:11px; opacity:0.8">
-      실작업·비작업 = 전체 공종 합(병행 포함) · 총공사기간 = 크리티컬 패스 달력(병행 반영)
+      실작업·비작업 = 전체 공종 합 · 총공사기간 = 크리티컬 패스 기준 달력일
     </td>
   `;
   tbody.appendChild(tr);
@@ -2286,7 +2286,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
       ganttRowNo++;
       ganttRows.push({
         noText:  ganttRowNo,
-        noClass: 'critical',
+        noClass: t.type === 'critical' ? 'critical' : 'normal',
         label:   `모듈 설치 (크레인 ${v.크레인대수}대)`,
         bars:    t.modBars,
         parallel: false
@@ -2295,7 +2295,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
         ganttRows.push({
           noText:  '↳',
           noClass: 'orange',
-          label:   `수평접합 (층당 ${v.수평접합부}접합부, 양중과 동시 진행 — 병행)`,
+          label:   `수평접합 (층당 ${v.수평접합부}접합부, 양중과 동시 진행)`,
           bars:    t.boltBars,
           parallel: false
         });
@@ -2335,12 +2335,6 @@ function renderGantt(tasks, totalDays, v, startDate) {
     label.appendChild(noEl);
     label.appendChild(nameSpan);
 
-    if (row.parallel) {
-      const badge = document.createElement('span');
-      badge.className = 'g-parallel';
-      badge.textContent = '병행';
-      label.appendChild(badge);
-    }
 
     // 트랙
     const track = document.createElement('div');
