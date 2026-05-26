@@ -1566,7 +1566,7 @@ function buildTasks(v) {
   const t5_real = Math.max(1, calG(옥탑작업일));
   add(5, '옥탑 골조 (코어 상부: 계단실·물탱크실)', t5_real, 0, task(4).end + 1, 'normal',
     `켄텍 PHF 실적: 옥탑 9.04작업일 ÷ 켄텍 기준층 475㎡ = 0.019일/㎡ × 코어바닥면적 ${v.코어바닥면적.toFixed(0)}㎡ ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t5_real}일 (옥탑=코어 상부, 바닥면적 비례)`,
-    ['kentech_core']);
+    ['kentech_module']);
   s[s.length - 1].work = Math.max(1, Math.round(옥탑작업일));   // 노무비 산정용 실작업일
 
   // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행) — OTKCRK 5일을 층당 모듈수 비례
