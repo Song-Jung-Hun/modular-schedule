@@ -652,6 +652,13 @@
   <!-- ── 탭1: 변수입력 ── -->
   <div class="tab-panel active" id="tab-inputs">
 
+    <!-- 모델(JSON) 불러오기 -->
+    <div style="margin-bottom:16px; padding:12px 16px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px;">
+      <button class="ref-btn" style="font-size:13px;" onclick="document.getElementById('sceneFileInput').click()">📂 모델(JSON) 불러오기</button>
+      <input type="file" id="sceneFileInput" accept=".json,application/json" style="display:none" onchange="onSceneFile(event)">
+      <span id="sceneLoadStatus" style="margin-left:10px; font-size:12px; color:#555;">친구 프로그램의 scene.json을 불러오면 층수·모듈수·면적·코어가 자동 입력됩니다. (크레인·속도·가동율·단가는 직접 입력)</span>
+    </div>
+
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
 
       <!-- A. 건물 기본정보 -->
@@ -1554,18 +1561,22 @@ function buildTasks(v) {
     `켄텍 실적: 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² × 코어면적 ${v.코어골조면적}m² ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.코어층당일}일/층 × ${v.총층수}층`,
     ['kentech_core']);
 
-  // 5. 옥탑 골조
-  const t5_real = 11;  // 광양 기가타운 실적: 옥상 골조 11일 (WBS 6.1.1.6.5)
-  const t5_nw   = 0; // 광양 달력 기간 기반 — 비작업일 이미 포함
-  add(5, '옥탑 골조 (코어 상부: 계단실·물탱크실)', t5_real, t5_nw, task(4).end + 1, 'normal',
-    '광양 기가타운 실적: 옥상 골조 11일 WBS 6.1.1.6.5 (달력 기간, 광양 비작업일 포함) / 모듈로만 짓는 경우 코어 최상부 구조물에 해당',
-    ['gwangyang_structure']);
+  // 5. 옥탑 골조 — 켄텍 PHF(펜트하우스층) 면적 비례: 9.04작업일 ÷ 126.29㎡ = 0.0716일/㎡ × 코어면적(옥탑=코어 상부)
+  const 옥탑작업일 = v.코어바닥면적 * 0.0716;
+  const t5_real = Math.max(1, calG(옥탑작업일));
+  add(5, '옥탑 골조 (코어 상부: 계단실·물탱크실)', t5_real, 0, task(4).end + 1, 'normal',
+    `켄텍 PHF 실적: 9.04작업일 ÷ 126.29㎡ = 0.0716일/㎡ × 코어면적 ${v.코어바닥면적.toFixed(0)}㎡ ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${t5_real}일 (옥탑=코어 상부, 바닥면적 비례)`,
+    ['kentech_core']);
+  s[s.length - 1].work = Math.max(1, Math.round(옥탑작업일));   // 노무비 산정용 실작업일
 
-  // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행)
-  add(6, '베이스플레이트 설치', calG(5), 0, afterPilotiEnd + 1, 'normal',
-    `OTKCRK p.135 표4-39+p.163 표5-11: 앵커볼트(2일)+베이스플레이트(2일)+무수축몰탈(1일) = 실작업 5일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(5)}일 (옥외, 날씨 반영) / 1층·필로티 완료 후 착수 (코어골조와 병행)`,
+  // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행) — OTKCRK 5일을 층당 모듈수 비례
+  const 베이스기준모듈 = 10;   // OTKCRK 천안두정 기준 층당 모듈수(프로그램 공통 기준)
+  const 층당모듈_base = v.층당세대 * v.세대당모듈;
+  const 베이스작업일 = Math.max(1, 5 * 층당모듈_base / 베이스기준모듈);   // 5일 ÷ 10모듈 × 우리 층당모듈
+  add(6, '베이스플레이트 설치', calG(베이스작업일), 0, afterPilotiEnd + 1, 'normal',
+    `OTKCRK p.135/163: 앵커볼트+베이스+무수축몰탈 = 천안두정 5일(기준 10모듈/층) ÷ 10 × ${층당모듈_base}모듈 = ${베이스작업일.toFixed(1)}작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(베이스작업일)}일 (1층 모듈수 비례, 옥외) / 코어골조와 병행`,
     ['otkcrk_p135', 'otkcrk_p163'], true);
-  s[s.length - 1].work = 5;   // 노무비 산정용 실작업일(가동율 적용 전)
+  s[s.length - 1].work = Math.max(1, Math.round(베이스작업일));   // 노무비 산정용 실작업일
 
   // ── 7. 모듈 현장 조립 + 접합 작업 (층별 순차: 인양 → 수직접합(강봉) → 수평접합) ──
   // 코어병행형: 코어 착수 후 '코어 선행 일수'만큼 지난 뒤 모듈 시작 → 코어와 병행 진행
@@ -1573,28 +1584,18 @@ function buildTasks(v) {
   const cycleStart = max(task(4).start + v.코어선행일, task(6).end + 1);
   const 층당설치일_최하 = v.층당설치일_최하층;
   const 층당설치일_기준 = v.층당설치일_기준층;
-  // 양중 부분 = 설치 + 수직접합(양중에 합침) | 접합 부분 = 수평접합 절반(공기 반영분)
-  const 층당양중_최하 = 층당설치일_최하 + v.층당강봉일;
+  // ── 병행 모델: 양중+수직접합 과 수평접합을 동시에 진행 → 한 층 = max(둘 중 긴 쪽) ──
+  const 층당양중_최하 = 층당설치일_최하 + v.층당강봉일;   // 양중 + 수직접합(합침)
   const 층당양중_기준 = 층당설치일_기준 + v.층당강봉일;
-  const 층당접합_공기 = v.층당수평접합일_공기;
-  const 최하층소요일 = 층당양중_최하 + 층당접합_공기;
-  const 기준층소요일 = 층당양중_기준 + 층당접합_공기;
+  const 층당수평 = v.층당수평접합일;                       // 수평접합(전체) — 양중과 동시
   const 총조립기간 = v.총조립기간;
 
-  // ── 가동율 기반 달력 환산: 총실작업일에 calG 1회 적용 → 층별 비례 분배 (ceiling 누적 방지) ──
-  const 달_총조립기간 = 총조립기간 > 0 ? calG(총조립기간) : 0;
-  const 달_비율 = 총조립기간 > 0 ? 달_총조립기간 / 총조립기간 : 1;
-  const 달_최하층소요일 = 최하층소요일 > 0 ? Math.max(1, Math.round(최하층소요일 * 달_비율)) : 0;
-  const 달_기준층소요일 = 기준층소요일 > 0 ? Math.max(1, Math.round(기준층소요일 * 달_비율)) : 0;
-  // 달력 소요일을 양중(설치+수직)/접합(수평절반) 비율로 분리
-  const 달_최하양중 = 최하층소요일 > 0
-    ? Math.max(1, Math.round(달_최하층소요일 * 층당양중_최하 / 최하층소요일))
-    : 달_최하층소요일;
-  const 달_기준양중 = 기준층소요일 > 0
-    ? Math.max(1, Math.round(달_기준층소요일 * 층당양중_기준 / 기준층소요일))
-    : 달_기준층소요일;
-  const 달_최하접합 = 달_최하층소요일 - 달_최하양중;
-  const 달_기준접합 = 달_기준층소요일 - 달_기준양중;
+  // ── 가동율 기반 달력 환산 (양중·수평 각각 환산 후, 층 = 둘 중 긴 쪽) ──
+  const 달_최하양중 = calG(층당양중_최하);
+  const 달_기준양중 = calG(층당양중_기준);
+  const 달_수평    = 층당수평 > 0 ? calG(층당수평) : 0;
+  const 달_최하층소요일 = Math.max(달_최하양중, 달_수평);
+  const 달_기준층소요일 = Math.max(달_기준양중, 달_수평);
   // ── 코어 게이팅: 각 층 모듈은 그 층 코어 완료 후에 설치 ──
   // 코어(층당 ${코어층당}일)가 모듈 설치(층당 3일 안팎)보다 느리므로, 모듈은 코어 진행에 끌려감(추월 불가)
   const 코어start = task(4).start;
@@ -1604,15 +1605,15 @@ function buildTasks(v) {
   let prevEnd = cycleStart - 1;   // 직전 층 모듈 완료일
   for (let f = 0; f < v.세대층; f++) {
     const 달_양중일 = f === 0 ? 달_최하양중 : 달_기준양중;
-    const 달_접합일 = f === 0 ? 달_최하접합 : 달_기준접합;
     const 달_층소요일 = f === 0 ? 달_최하층소요일 : 달_기준층소요일;
     const 코어층완료 = 코어start + (f + 1) * 코어층당 - 1;   // (f+1)층 코어 완료일
     const fStart = Math.max(코어층완료 + 1, prevEnd + 1);     // 그 층 코어 완료 후 & 직전 층 모듈 후
     _modBars.push({ start: fStart, total: 달_양중일, type: 'critical',
                     name: `${f+1}층 양중+수직접합 (${달_양중일}일)` });
-    if (층당접합_공기 > 0) {
-      _boltBars.push({ start: fStart + 달_양중일, total: Math.max(1, 달_접합일), type: 'orange',
-                       name: `${f+1}층 수평접합 (${Math.max(1, 달_접합일)}일, 절반 반영)` });
+    if (달_수평 > 0) {
+      // 수평접합은 양중과 같은 시점에 시작 (다른 쪽에서 동시 진행)
+      _boltBars.push({ start: fStart, total: 달_수평, type: 'orange',
+                       name: `${f+1}층 수평접합 (${달_수평}일, 양중과 병행)` });
     }
     prevEnd = fStart + 달_층소요일 - 1;
   }
@@ -1630,7 +1631,7 @@ function buildTasks(v) {
   add(7,
       `모듈 현장 조립 + 접합 작업 (${v.세대층}층, 크레인 ${v.크레인대수}대)`,
       총조립기간, 조립_nw, cycleStart, 모듈CP ? 'critical' : 'normal',
-      `OTKCRK p.163 표5-11: [양중+수직접합] 최하층 ${층당설치일_최하}+${v.층당강봉일}일, 기준층 ${층당설치일_기준}+${v.층당강봉일}일/층 (크레인 ${v.크레인대수}대, 수직접합 ${v.모듈당수직접합}개/모듈은 양중에 합산)${v.층당수평접합일_공기 > 0 ? ` + 수평접합 ${v.층당수평접합일_공기}일/층 (층당 ${v.수평접합부}접합부×${v.수평접합속도}일의 절반 — 모듈 2개 공유)` : ''} × ${v.세대층}층 / 가동율 반영`,
+      `OTKCRK p.163 표5-11: [양중+수직접합] 최하층 ${층당설치일_최하}+${v.층당강봉일}일, 기준층 ${층당설치일_기준}+${v.층당강봉일}일/층 (크레인 ${v.크레인대수}대, 수직접합 ${v.모듈당수직접합}개/모듈은 양중에 합산)${v.층당수평접합일 > 0 ? ` ∥ 수평접합 ${v.층당수평접합일}일/층 (층당 ${v.수평접합부}접합부×${v.수평접합속도}일, 양중과 동시 진행 → 한 층 = max(양중, 수평))` : ''} × ${v.세대층}층 / 가동율 반영`,
       ['otkcrk_p163', 'otkcrk_p8']);
   // 간트 세그먼트 데이터 첨부
   s[s.length - 1].modBars  = _modBars;
@@ -1684,6 +1685,119 @@ function buildTasks(v) {
   s[s.length - 1].work = 40;   // 노무비 산정용 실작업일
 
   return s;
+}
+
+// ── 모델(JSON) 불러오기 ───────────────────────────────────────────────────
+function setSceneStatus(msg, isErr) {
+  const el = $('sceneLoadStatus');
+  if (el) { el.textContent = msg; el.style.color = isErr ? '#B71C1C' : '#1d6b2f'; }
+}
+function onSceneFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    let json;
+    try { json = JSON.parse(ev.target.result); }
+    catch (err) { setSceneStatus('❌ JSON을 읽지 못했습니다: ' + err.message, true); return; }
+    try { importScene(json, file.name); }
+    catch (err) { setSceneStatus('❌ 적용 중 오류: ' + err.message, true); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';   // 같은 파일 다시 선택 가능하게
+}
+// scene.json → 입력칸 채우기 (summary 있으면 우선, 없으면 부재 좌표로 계산)
+function importScene(json, fname) {
+  const comps = Array.isArray(json.components) ? json.components : [];
+  const sum = json.summary || {};
+  const mods = comps.filter(c => c.comp_type === 'module');
+  const fIdx = c => +c.floor_index || 0;
+  const dim = c => c.dimensions || {};
+
+  // ── 부재 좌표 기반 계산값 ──
+  const 계산_층수   = mods.length ? (Math.max.apply(null, mods.map(fIdx)) + 1) : 0;
+  const 계산_총모듈 = mods.length;
+  const 계산_층당   = mods.filter(c => fIdx(c) === 0).length || (계산_층수 ? Math.round(계산_총모듈 / 계산_층수) : 0);
+  const wAvg = mods.length ? mods.reduce((a, c) => a + (dim(c).width || 0), 0) / mods.length : 3400;
+  const dAvg = mods.length ? mods.reduce((a, c) => a + (dim(c).depth || 0), 0) / mods.length : 6000;
+  // 바닥면적(m²): floor0 모듈+바닥패널 footprint 합 (mm²→m²)
+  let 계산_바닥 = 0;
+  comps.filter(c => fIdx(c) === 0 && (c.comp_type === 'module' || c.comp_type === 'floor_panel'))
+       .forEach(c => { 계산_바닥 += (dim(c).width || 0) * (dim(c).depth || 0); });
+  계산_바닥 = 계산_바닥 / 1e6;
+  // 코어 한 층 면적(m²): core_slab 1개
+  const slab = comps.find(c => c.comp_type === 'core_slab');
+  const 계산_코어 = slab ? (dim(slab).width || 0) * (dim(slab).depth || 0) / 1e6 : 0;
+
+  // ── summary 우선, 없으면 계산값 ──
+  const 층수   = sum.floors_above_ground || 계산_층수 || 0;
+  const 총모듈 = sum.modules_total || 계산_총모듈 || 0;
+  let   층당   = sum.modules_per_floor;
+  if (Array.isArray(층당)) 층당 = Math.max.apply(null, 층당);
+  층당 = 층당 || 계산_층당 || (층수 ? Math.round(총모듈 / 층수) : 0);
+  const 바닥   = sum.footprint_area_m2 || 계산_바닥 || 0;
+  const 코어   = sum.core_area_per_floor_m2 || 계산_코어 || 0;
+  const 지하   = sum.basement_floors != null ? sum.basement_floors : 0;
+  const 중량   = sum.module_max_weight_t || null;
+
+  if (!층수 || !총모듈) { setSceneStatus('❌ 모듈/층 정보를 찾지 못했습니다. 파일을 확인하세요.', true); return; }
+
+  // ── 입력칸 채우기 ──
+  $('i_세대층').value   = 층수;
+  $('i_층당세대').value = 층당;   // 1모듈=1세대 가정 (세대당 모듈=1)
+  moduleTypes = [{ name: '모듈(JSON)', w: +(wAvg / 1000).toFixed(2), l: +(dAvg / 1000).toFixed(2),
+                   n: 1, wt: 중량 ? +중량 : ((moduleTypes[0] && moduleTypes[0].wt) || 10) }];
+  renderModuleTable();   // → updateModuleTotals → calc 호출됨
+  if (바닥) $('i_바닥면적').value     = Math.round(바닥);
+  if (코어) $('i_코어바닥면적').value = Math.round(코어);
+  $('i_지하층').value = String(Math.min(Math.max(지하, 0), 3));
+  // 수직접합: summary 있으면 모듈당으로 환산 (없으면 기존 4개/모듈 유지)
+  if (sum.vertical_joints_total != null && 총모듈)
+    $('i_모듈당수직접합').value = Math.max(0, Math.round(sum.vertical_joints_total / 총모듈));
+  // 수평접합부(층당): summary 우선, 없으면 모듈 좌표로 인접쌍 자동 검출
+  let 수평txt = '';
+  if (sum.horizontal_joints_total != null && 층수) {
+    $('i_수평접합부').value = Math.max(0, Math.round(sum.horizontal_joints_total / 층수));
+    수평txt = ` · 수평접합 ${$('i_수평접합부').value}개/층(요약)`;
+  } else {
+    const hj = countHorizJointsFloor0(comps);
+    if (hj.ok) { $('i_수평접합부').value = hj.count; 수평txt = ` · 수평접합 ${hj.count}개/층(좌표 자동검출)`; }
+  }
+
+  calc();
+  const src = json.summary ? '요약값(summary)' : '부재 좌표 계산';
+  const 중량txt = 중량 ? ` · 최대중량 ${중량}t` : ' · 중량 미포함(직접 입력)';
+  setSceneStatus(`✅ ${fname} 불러옴 [${src}]: ${층수}층 · 모듈 ${총모듈}개(층당 ${층당}) · 바닥 ${Math.round(바닥)}㎡ · 코어 ${Math.round(코어)}㎡${수평txt}${중량txt}. 크레인·접합속도·가동율·단가는 직접 확인하세요.`, false);
+}
+
+// 모듈 좌표로 같은 층(floor0) 인접 모듈쌍(=수평접합) 자동 검출
+function countHorizJointsFloor0(comps) {
+  const fIdx = c => +c.floor_index || 0;
+  const mods = comps.filter(c => c.comp_type === 'module' && fIdx(c) === 0);
+  if (mods.length < 2) return { ok: false, count: 0 };
+  // position을 모서리로 보고 그 점 기준 CCW 회전 → 박스가 뻗는 방향 결정
+  function box(c) {
+    const x = c.position[0], y = c.position[1];
+    const w = (c.dimensions || {}).width || 0, d = (c.dimensions || {}).depth || 0;
+    const rot = (((c.rotation || 0) % 360) + 360) % 360;
+    if (rot === 0)   return { x1: x,     x2: x + w, y1: y,     y2: y + d };
+    if (rot === 90)  return { x1: x - d, x2: x,     y1: y,     y2: y + w };
+    if (rot === 180) return { x1: x - w, x2: x,     y1: y - d, y2: y };
+    return               { x1: x,     x2: x + d, y1: y - w, y2: y };   // 270
+  }
+  const bs = mods.map(box);
+  const T = 400;   // 인접 허용 간격(mm)
+  let count = 0;
+  for (let i = 0; i < bs.length; i++) for (let k = i + 1; k < bs.length; k++) {
+    const a = bs[i], b = bs[k];
+    const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1);
+    const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1);
+    if (ox > 50 && oy > 50) continue;   // 겹침(비정상)은 인접에서 제외
+    const tX = (Math.abs(a.x2 - b.x1) <= T || Math.abs(b.x2 - a.x1) <= T) && oy > -T;
+    const tY = (Math.abs(a.y2 - b.y1) <= T || Math.abs(b.y2 - a.y1) <= T) && ox > -T;
+    if (tX || tY) count++;
+  }
+  return { ok: true, count };
 }
 
 // ── 모듈 타입 관리 ──────────────────────────────────────────────────────
@@ -1823,21 +1937,17 @@ function calc() {
   // 수직접합: 층당 수직접합 수 = 층당모듈수 × 모듈당 접합수(꼭지점 기둥 4개) → × 개당 소요일
   v.층당수직접합수 = 층당모듈수 * v.모듈당수직접합;
   v.층당강봉일    = (v.수직접합속도 > 0 && v.모듈당수직접합 > 0) ? Math.max(1, ceil(v.층당수직접합수 * v.수직접합속도)) : 0;
-  // 수평접합: 층당 접합부 수 직접 입력, 층별 순차 (수직접합 직후 진행)
+  // 수평접합: 층당 접합부 수 (전체 시간 — 병행 모델에서 양중과 동시 진행)
   v.층당수평접합일 = v.수평접합부 > 0 && v.수평접합속도 > 0
     ? Math.max(1, ceil(v.수평접합부 * v.수평접합속도))
     : 0;
-  // 공기 반영용 수평접합: 모듈 2개가 나눠 가지므로 절반만 공기에 추가 (시간 자체를 ×0.5)
-  v.층당수평접합일_공기 = v.수평접합부 > 0 && v.수평접합속도 > 0
-    ? Math.max(1, Math.ceil(v.수평접합부 * v.수평접합속도 * 0.5))
-    : 0;
   v.층당접합일    = v.층당강봉일 + v.층당수평접합일;       // 표시·노무 기준(수직+수평 풀)
-  // 공기 기준: 수직접합은 양중에 합쳐 그대로 + 수평은 절반
-  v.층당접합일_공기 = v.층당강봉일 + v.층당수평접합일_공기;
-  v.층당소요일    = v.층당설치일_기준층 + v.층당접합일_공기;
-  // 총조립기간(공기): 1층(최하층) + 나머지(기준층) — 수직 그대로, 수평 절반
-  const 최하층소요일_calc = v.층당설치일_최하층 + v.층당접합일_공기;
-  const 기준층소요일_calc = v.층당설치일_기준층 + v.층당접합일_공기;
+  // ── 병행 모델: 양중+수직접합 과 수평접합을 동시에 진행 → 한 층 시간 = 둘 중 긴 쪽(max) ──
+  v.층당양중수직   = v.층당설치일_기준층 + v.층당강봉일;     // 양중 + 수직접합(양중에 합침)
+  v.층당소요일    = Math.max(v.층당양중수직, v.층당수평접합일);
+  // 총조립기간(공기): 1층(최하층) + 나머지(기준층), 각 층 = max(양중+수직, 수평)
+  const 최하층소요일_calc = Math.max(v.층당설치일_최하층 + v.층당강봉일, v.층당수평접합일);
+  const 기준층소요일_calc = Math.max(v.층당설치일_기준층 + v.층당강봉일, v.층당수평접합일);
   v.총조립기간    = v.세대층 > 0
     ? 최하층소요일_calc + Math.max(v.세대층 - 1, 0) * 기준층소요일_calc
     : 0;
@@ -2129,7 +2239,7 @@ function renderGantt(tasks, totalDays, v, startDate) {
         ganttRows.push({
           noText:  '↳',
           noClass: 'orange',
-          label:   `수평접합 (층당 ${v.수평접합부}접합부, 시간 절반 반영 — 모듈 2개 공유)`,
+          label:   `수평접합 (층당 ${v.수평접합부}접합부, 양중과 동시 진행 — 병행)`,
           bars:    t.boltBars,
           parallel: false
         });
