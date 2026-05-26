@@ -1770,11 +1770,25 @@ function importScene(json, fname) {
   setSceneStatus(`✅ ${fname} 불러옴 [${src}]: ${층수}층 · 모듈 ${총모듈}개(층당 ${층당}) · 바닥 ${Math.round(바닥)}㎡ · 코어 ${Math.round(코어)}㎡${수평txt}${중량txt}. 크레인·접합속도·가동율·단가는 직접 확인하세요.`, false);
 }
 
-// 모듈 좌표로 같은 층(floor0) 인접 모듈쌍(=수평접합) 자동 검출
+// 모듈 좌표로 같은 층 인접 모듈쌍(=수평접합) 자동 검출 — 수직모듈 포함
+// · 수직모듈(vertical_module)은 관통하는 모든 층에 존재 → 각 층에서 옆 모듈과의 접합을 셈
+// · 수직모듈 자체의 층간 수직접합은 없음(한 덩어리). 그래서 일반 수직접합 계산엔 안 들어감
 function countHorizJointsFloor0(comps) {
   const fIdx = c => +c.floor_index || 0;
-  const mods = comps.filter(c => c.comp_type === 'module' && fIdx(c) === 0);
-  if (mods.length < 2) return { ok: false, count: 0 };
+  const isMod = c => c.comp_type === 'module' || c.comp_type === 'vertical_module';
+  const all = comps.filter(isMod);
+  if (all.length < 2) return { ok: false, count: 0 };
+  // 층 높이 추정: 모듈 z값들의 최소 양(+) 간격
+  const zs = Array.from(new Set(all.map(c => +c.position[2] || 0))).sort((a, b) => a - b);
+  let floorH = 3000;
+  for (let i = 1; i < zs.length; i++) { const g = zs[i] - zs[i - 1]; if (g > 500) { floorH = g; break; } }
+  // 모듈이 차지하는 층 범위 [시작층, 끝층] — 수직모듈은 높이/층고만큼 여러 층
+  const span = c => {
+    const f0 = fIdx(c);
+    const h = (c.dimensions || {}).height || 0;
+    const k = c.comp_type === 'vertical_module' ? Math.max(1, Math.round(h / floorH)) : 1;
+    return [f0, f0 + k - 1];
+  };
   // position을 모서리로 보고 그 점 기준 CCW 회전 → 박스가 뻗는 방향 결정
   function box(c) {
     const x = c.position[0], y = c.position[1];
@@ -1785,19 +1799,28 @@ function countHorizJointsFloor0(comps) {
     if (rot === 180) return { x1: x - w, x2: x,     y1: y - d, y2: y };
     return               { x1: x,     x2: x + d, y1: y - w, y2: y };   // 270
   }
-  const bs = mods.map(box);
   const T = 400;   // 인접 허용 간격(mm)
-  let count = 0;
-  for (let i = 0; i < bs.length; i++) for (let k = i + 1; k < bs.length; k++) {
-    const a = bs[i], b = bs[k];
-    const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1);
-    const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1);
-    if (ox > 50 && oy > 50) continue;   // 겹침(비정상)은 인접에서 제외
-    const tX = (Math.abs(a.x2 - b.x1) <= T || Math.abs(b.x2 - a.x1) <= T) && oy > -T;
-    const tY = (Math.abs(a.y2 - b.y1) <= T || Math.abs(b.y2 - a.y1) <= T) && ox > -T;
-    if (tX || tY) count++;
+  const adjCount = list => {
+    let c = 0;
+    for (let i = 0; i < list.length; i++) for (let k = i + 1; k < list.length; k++) {
+      const a = list[i], b = list[k];
+      const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1);
+      const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1);
+      if (ox > 50 && oy > 50) continue;   // 겹침(비정상) 제외
+      const tX = (Math.abs(a.x2 - b.x1) <= T || Math.abs(b.x2 - a.x1) <= T) && oy > -T;
+      const tY = (Math.abs(a.y2 - b.y1) <= T || Math.abs(b.y2 - a.y1) <= T) && ox > -T;
+      if (tX || tY) c++;
+    }
+    return c;
+  };
+  // 각 층별로 그 층에 존재하는 모듈(수직모듈은 관통 층 모두 포함)의 인접쌍 수 → 대표값(층 최댓값)
+  const maxFloor = Math.max.apply(null, all.map(c => span(c)[1]));
+  let best = 0;
+  for (let f = 0; f <= maxFloor; f++) {
+    const here = all.filter(c => { const s = span(c); return f >= s[0] && f <= s[1]; }).map(box);
+    best = Math.max(best, adjCount(here));
   }
-  return { ok: true, count };
+  return { ok: true, count: best };
 }
 
 // ── 모듈 타입 관리 ──────────────────────────────────────────────────────
