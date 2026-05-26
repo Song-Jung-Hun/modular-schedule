@@ -638,6 +638,9 @@
 
 <div class="container">
 
+  <!-- 입력 검증 경고 -->
+  <div id="inputWarn" style="display:none; margin-bottom:14px; padding:12px 16px; background:#FFEBEE; border:1px solid #EF9A9A; border-radius:8px; color:#B71C1C; font-weight:700; font-size:13px;"></div>
+
   <!-- 탭 -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('inputs')">📋 변수 입력</button>
@@ -1559,9 +1562,10 @@ function buildTasks(v) {
     ['gwangyang_structure']);
 
   // 6. 베이스플레이트 (1층·필로티 완료 후, 코어골조와 병행)
-  add(6, '베이스플레이트 설치', 5, 0, afterPilotiEnd + 1, 'normal',
-    'OTKCRK p.135 표4-39+p.163 표5-11: 앵커볼트(2일)+베이스플레이트(2일)+무수축몰탈(1일) = 실작업 5일 / 1층·필로티 완료 후 착수 (코어골조와 병행)',
+  add(6, '베이스플레이트 설치', calG(5), 0, afterPilotiEnd + 1, 'normal',
+    `OTKCRK p.135 표4-39+p.163 표5-11: 앵커볼트(2일)+베이스플레이트(2일)+무수축몰탈(1일) = 실작업 5일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(5)}일 (옥외, 날씨 반영) / 1층·필로티 완료 후 착수 (코어골조와 병행)`,
     ['otkcrk_p135', 'otkcrk_p163'], true);
+  s[s.length - 1].work = 5;   // 노무비 산정용 실작업일(가동율 적용 전)
 
   // ── 7. 모듈 현장 조립 + 접합 작업 (층별 순차: 인양 → 수직접합(강봉) → 수평접합) ──
   // 코어병행형: 코어 착수 후 '코어 선행 일수'만큼 지난 뒤 모듈 시작 → 코어와 병행 진행
@@ -1640,19 +1644,27 @@ function buildTasks(v) {
   const 지붕_트러스일 = Math.max(1, ceil(3 * 층당총모듈 / 기준_층당모듈));
   const 지붕_패널일   = Math.max(1, ceil(3 * 층당총모듈 / 기준_층당모듈));
   const 지붕_방수일   = Math.max(1, ceil(2 * 층당총모듈 / 기준_층당모듈));
+  // 옥외(옥상) 작업 → 가동율 적용(÷가동율, 비·눈 등 날씨 반영)
+  const 지붕_트러스_달 = calG(지붕_트러스일);
+  const 지붕_패널_달   = calG(지붕_패널일);
+  const 지붕_방수_달   = calG(지붕_방수일);
+  const 가동율pct = (v.가동율 * 100).toFixed(0);
 
   // 지붕 트러스 (모듈+강봉 완료 AND 옥탑골조 완료 중 늦은 것)
-  add(taskNo++, '지붕 트러스 조립', 지붕_트러스일, 0, max(lastAssemblyEnd, task(5).end) + 1, 'critical',
-    `OTKCRK p.163/135: 층당 ${기준_층당모듈}모듈 기준 3일 → 층당 ${층당총모듈}모듈 = ${지붕_트러스일}일 (지붕 면적 비례)`,
+  add(taskNo++, '지붕 트러스 조립', 지붕_트러스_달, 0, max(lastAssemblyEnd, task(5).end) + 1, 'critical',
+    `OTKCRK p.163/135: 층당 ${기준_층당모듈}모듈 3일 → ${층당총모듈}모듈 = ${지붕_트러스일}작업일 ÷ 가동율 ${가동율pct}% = ${지붕_트러스_달}일 (옥외, 날씨 반영)`,
     ['otkcrk_p163', 'otkcrk_p135']);
+  s[s.length - 1].work = 지붕_트러스일;   // 노무비 산정용 실작업일
 
-  add(taskNo++, '지붕 패널 설치', 지붕_패널일, 0, s[s.length - 1].end + 1, 'critical',
-    `OTKCRK p.135 표4-39: 층당 ${기준_층당모듈}모듈 기준 3일 → 층당 ${층당총모듈}모듈 = ${지붕_패널일}일 (지붕 면적 비례)`,
+  add(taskNo++, '지붕 패널 설치', 지붕_패널_달, 0, s[s.length - 1].end + 1, 'critical',
+    `OTKCRK p.135 표4-39: 층당 ${기준_층당모듈}모듈 3일 → ${층당총모듈}모듈 = ${지붕_패널일}작업일 ÷ 가동율 ${가동율pct}% = ${지붕_패널_달}일 (옥외, 날씨 반영)`,
     ['otkcrk_p135']);
+  s[s.length - 1].work = 지붕_패널일;
 
-  add(taskNo++, '방수시트 시공', 지붕_방수일, 0, s[s.length - 1].end + 1, 'critical',
-    `OTKCRK p.135 표4-39: 층당 ${기준_층당모듈}모듈 기준 2일 → 층당 ${층당총모듈}모듈 = ${지붕_방수일}일 (지붕 면적 비례)`,
+  add(taskNo++, '방수시트 시공', 지붕_방수_달, 0, s[s.length - 1].end + 1, 'critical',
+    `OTKCRK p.135 표4-39: 층당 ${기준_층당모듈}모듈 2일 → ${층당총모듈}모듈 = ${지붕_방수일}작업일 ÷ 가동율 ${가동율pct}% = ${지붕_방수_달}일 (옥외, 날씨 반영)`,
     ['otkcrk_p135']);
+  s[s.length - 1].work = 지붕_방수일;
 
   // 현장마감·건축마감: 세대수 비례 — 천안두정 40세대 30일 기준 = 0.75일/세대 (규모 커지면 증가)
   const 마감일 = Math.max(1, Math.round(30 * v.총세대 / 40));
@@ -1665,9 +1677,10 @@ function buildTasks(v) {
   const t_마감 = s[s.length - 1];
   // 부대공사: 건축준공 후 순차 진행 (OTKCRK p.156 + LH지침 p.7)
   // 토목 15일(건축준공 후) → 조경 25일(토목준공 후) = 40일
-  add(taskNo, '부대공사 (토목+조경)', 40, 0, t_마감.end + 1, 'critical',
-    'OTKCRK p.156+LH지침 p.7: 토목 15일(건축준공 후) → 조경 25일(토목준공 후) = 순차 40일',
+  add(taskNo, '부대공사 (토목+조경)', calG(40), 0, t_마감.end + 1, 'critical',
+    `OTKCRK p.156+LH지침 p.7: 토목 15일 → 조경 25일 = 순차 40작업일 ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${calG(40)}일 (옥외, 날씨 반영)`,
     ['otkcrk_p156', 'lh_p7']);
+  s[s.length - 1].work = 40;   // 노무비 산정용 실작업일
 
   return s;
 }
@@ -1789,6 +1802,19 @@ function calc() {
   v.총세대        = v.세대층 * v.층당세대;
   v.총모듈        = v.총세대 * v.세대당모듈;
   const 층당모듈수 = v.층당세대 * v.세대당모듈;
+
+  // ── 입력 하한 검증: 세대층·층당세대·세대당 모듈은 1 이상이어야 계산이 의미 있음 ──
+  const _warn = [];
+  if (v.세대층 < 1)     _warn.push('세대층(1 이상)');
+  if (v.층당세대 < 1)   _warn.push('층당 세대수(1 이상)');
+  if (v.세대당모듈 < 1) _warn.push('세대당 모듈수(모듈 타입에서 1개 이상)');
+  const warnEl = $('inputWarn');
+  if (_warn.length) {
+    if (warnEl) { warnEl.style.display = ''; warnEl.textContent = '⚠️ 입력 확인 필요: ' + _warn.join(', ') + ' — 이 값들을 채워야 공정표·경제성이 계산됩니다.'; }
+    const tb = $('total-badge'); if (tb) tb.textContent = '⚠️ 입력 확인 필요';
+    return;   // 비현실적 입력이면 잘못된 결과를 만들지 않고 중단
+  }
+  if (warnEl) warnEl.style.display = 'none';
   v.일일설치속도  = v.크레인대수 * v.기준층속도;   // 기준층 기준 (대표값)
   v.층당설치일_최하층 = ceil(층당모듈수 / Math.max(v.크레인대수 * v.최하층속도, 1));
   v.층당설치일_기준층 = ceil(층당모듈수 / Math.max(v.일일설치속도, 1));
@@ -1898,8 +1924,8 @@ function calc() {
 function renderEconomics(v, tasks) {
   const 유가 = +$('i_유가').value || 1600;
   const won = n => Math.round(n).toLocaleString();
-  // 태스크 실작업일 조회 (이름 앞부분 일치)
-  const dur = nm => { const t = tasks.find(x => x.name.startsWith(nm)); return t ? t.real : 0; };
+  // 태스크 실작업일 조회 (노무비는 실작업 기준 — 가동율 적용된 달력일이 아니라 work 우선)
+  const dur = nm => { const t = tasks.find(x => x.name.startsWith(nm)); return t ? (t.work != null ? t.work : t.real) : 0; };
   // 평균 동시 인원 = man-day(인·일) ÷ 작업일
   const avgPpl = (md, days) => days > 0 ? Math.round(md / days * 10) / 10 : 0;
   // man-day 맵 → 작업조 내역 (직종별 인·일·평균인원·일당·소계)
