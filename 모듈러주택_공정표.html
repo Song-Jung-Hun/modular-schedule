@@ -821,7 +821,7 @@
                   <input type="number" id="i_코어바닥면적" value="475" min="0" oninput="calc()">
                   <span class="unit">m²/층</span>
                 </div>
-                <span class="note-text">코어(계단실·EV) 한 층 바닥면적. 켄텍 기준층 데크 475m² → 거푸집 696m²(×1.465 자동 환산)</span>
+                <span class="note-text">코어(계단실·EV) 한 층 바닥면적 — <b>경제성(비용) 산정에만 사용</b> (공기는 면적과 무관, 층수로만). 켄텍 기준층 데크 475m² → 거푸집 696m²(×1.465)</span>
                 <button class="ref-btn ref-btn-inline" onclick="openRef(['kentech_core'])">📄 근거 보기</button>
               </div>
               <div class="input-group">
@@ -834,7 +834,7 @@
                   <span class="calc-val" id="r_코어총기간">—</span>
                   <span class="unit">일 (총 코어)</span>
                 </div>
-                <span class="note-text">= CEILING(바닥×1.465(거푸집) × 0.00809작업일/m² ÷ 가동율) × 총층수</span>
+                <span class="note-text">= CEILING(켄텍 코어 작업일 5.63일/층 ÷ 가동율) × 총층수 — <b>면적 무관, 층수로만</b></span>
               </div>
               <div class="input-group">
                 <label>코어 선행 일수 (모듈 착수 오프셋)</label>
@@ -1550,7 +1550,7 @@ function buildTasks(v) {
   const t4_real = v.코어총기간;
   const t4_nw   = 0; // 켄텍 C/D(가동율 63.7%) 기반 — 비작업일 이미 포함
   add(4, `코어 골조 (1~${v.총층수}층, ${v.코어층당일}일/층)`, t4_real, t4_nw, afterPilotiEnd + 1, 'critical',
-    `켄텍 실적: 기준층 거푸집 696m² → 작업일 5.63일 = 0.00809일/m² × 코어면적 ${v.코어골조면적}m² ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.코어층당일}일/층 × ${v.총층수}층`,
+    `켄텍 기준층 코어 작업일 5.63일/층(면적 무관) ÷ 가동율 ${(v.가동율*100).toFixed(0)}% = ${v.코어층당일}일/층 × ${v.총층수}층 = ${v.코어총기간}일`,
     ['kentech_core']);
 
   // 5. 옥탑 골조 — 켄텍 PHF(펜트하우스층) 면적 비례: 9.04작업일 ÷ 켄텍 기준층 475㎡ = 0.019일/㎡ × 코어바닥면적
@@ -2017,9 +2017,9 @@ function calc() {
   v.토공사기간   = Math.max(1, Math.ceil(v.바닥면적 * 0.0414 * v.토공깊이계수 / v.가동율));
 
   // 코어 골조 (코어병행형) — 입력은 바닥면적, 켄텍 실측 거푸집÷데크 = 696÷475 = 1.465배로 거푸집 환산
-  v.코어골조면적 = v.코어바닥면적 * 1.4653;   // 바닥 → 거푸집 (켄텍 기준)
-  // 거푸집 면적 × 0.00809작업일/m²(켄텍 696→5.63작업일) ÷ 가동율
-  v.코어층당일  = Math.max(1, ceil(v.코어골조면적 * 0.00809 / v.가동율));
+  v.코어골조면적 = v.코어바닥면적 * 1.4653;   // 바닥 → 거푸집 (켄텍 기준) — 경제성(비용) 산정용
+  // 공기(코어 골조): 켄텍 기준층 코어 작업일 5.63일/층(면적 무관) ÷ 우리 가동율 → 층당 달력일, × 우리 층수
+  v.코어층당일  = Math.max(1, ceil(5.63 / v.가동율));
   v.코어총기간  = v.코어층당일 * v.총층수;
 
   // 입력 섹션 표시 갱신
